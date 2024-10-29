@@ -3,16 +3,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.LoginController">
-    <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea" fx:controller="com.example.demo.LoginController">
+    <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3); -fx-background-radius: 15;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <Label style="-fx-font-size: 24;" text="软件名待定" textFill="WHITE" />
 
-        <TextField maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-        <PasswordField maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
+        <TextField prefHeight="39.0" prefWidth="163.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
+        <PasswordField promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
 
-        <Button fx:id="signInButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="39.0" prefWidth="130.0" style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="登录" />
-      <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="90.0" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 10; -fx-text-fill: white;" text="忘记密码？" />
-      <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: transparent;" text="注册" />
+        <Button style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="登录" />
+
+        <Label style="-fx-font-size: 12;" text="忘记密码?" textFill="WHITE" />
+        <Label style="-fx-font-size: 12;" text="注册" textFill="WHITE" />
     </VBox>
 </AnchorPane>
