@@ -24,8 +24,43 @@ public class LoginController {
     private Button signUpButton;
 
     @FXML
+    private Button forgetButton;
+
+
+
+    @FXML
     public void initialize() {
         signInButton.setOnAction(event -> handleSignIn());
+        signUpButton.setOnAction(event -> handleSignup());
+        forgetButton.setOnAction(event -> handleforget());
+    }
+
+    private void handleforget() {
+        try {
+            // Load the main chat interface
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("forget.fxml"));
+            Stage stage = (Stage) forgetButton.getScene().getWindow();
+            Scene scene = new Scene(fxmlLoader.load(), 255,461);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void handleSignup() {
+
+
+        try {
+            // Load the main chat interface
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Signup.fxml"));
+            Stage stage = (Stage) signUpButton.getScene().getWindow();
+            Scene scene = new Scene(fxmlLoader.load(), 255,461);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void handleSignIn() {
