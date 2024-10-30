@@ -13,6 +13,8 @@ public class LoginApp extends Application {
 
         primaryStage.setTitle("Login");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(true);
+
         primaryStage.show();
     }
 
