@@ -1,12 +1,17 @@
-package com.example.demo;
+package client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class MainpageController {
 
@@ -24,6 +29,8 @@ public class MainpageController {
 
     @FXML
     private Button sendButton;
+    @FXML
+    private Button backButton;
 
     @FXML
     public void initialize() {
@@ -32,6 +39,19 @@ public class MainpageController {
 
         // Send button action
         sendButton.setOnAction(event -> sendMessage());
+        backButton.setOnAction(actionEvent -> back());
+    }
+
+    private void back() {
+        try {
+            // Load the main chat interface
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
+            Stage stage = (Stage) backButton.getScene().getWindow();
+            Scene scene = new Scene(fxmlLoader.load(), 255,461);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendMessage() {

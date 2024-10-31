@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.SignupController">
-    <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.SignupController">
+    <VBox alignment="CENTER" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
         <Label style="-fx-font-size: 24;" text="注册账号" textFill="WHITE" />
 
         <TextField maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
         <PasswordField maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
         <PasswordField layoutX="21.0" layoutY="245.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="再次输入密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-
-        <Button maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="39.0" prefWidth="130.0" style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="注册" />
+   
+        <Button id="confirmbutton" fx:id="confirmbutton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="39.0" prefWidth="130.0" style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="注册" />
     </VBox>
+   <Button id="back" fx:id="back" mnemonicParsing="false" opacity="0.13" prefHeight="32.0" prefWidth="43.0" text="&lt;">
+   </Button>
 </AnchorPane>
