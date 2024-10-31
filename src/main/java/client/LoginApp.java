@@ -1,4 +1,4 @@
-package com.example.demo;
+package client;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
