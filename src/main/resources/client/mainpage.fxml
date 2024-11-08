@@ -15,7 +15,7 @@
    <!-- Sidebar for Contact List -->
    <VBox layoutX="10" layoutY="10" prefHeight="580" prefWidth="250" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10;">
       <TextField promptText="Search" style="-fx-background-radius: 15; -fx-padding: 10;" />
-      <ListView fx:id="contactListView" prefHeight="530" style="-fx-background-color: transparent;" />
+      <ListView fx:id="contactListView" prefHeight="530" prefWidth="224.0" style="-fx-background-color: transparent;" />
    </VBox>
 
    <!-- Main Chat Area -->
@@ -39,4 +39,6 @@
       </HBox>
    </VBox>
    <Button id="backButton" fx:id="backButton" layoutX="850.0" layoutY="22.0" mnemonicParsing="false" style="-fx-background-color: red; -fx-background-radius: 5;" text="退出" textFill="WHITE" />
+   <Button layoutX="265.0" layoutY="517.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="25.0" text="+" />
+   <Button fx:id="clearButton" layoutX="257.0" layoutY="548.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="45.0" text="clear" />
 </AnchorPane>
