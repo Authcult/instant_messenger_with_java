@@ -2,11 +2,13 @@ package client;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -31,15 +33,25 @@ public class MainpageController {
     private Button sendButton;
     @FXML
     private Button backButton;
+    @FXML
+    private Button clearButton;
+
+    private String currentUser = "Me";
+
+    private String selectedContact = ""; // 当前选中的联系人// 当前用户名称
 
     @FXML
     public void initialize() {
         // Sample contacts for the list view
         contactListView.getItems().addAll("Contact 1", "Contact 2", "Contact 3");
 
+        // 设置点击联系人列表的事件
+        contactListView.setOnMouseClicked(event -> switchChat());
+
         // Send button action
         sendButton.setOnAction(event -> sendMessage());
         backButton.setOnAction(actionEvent -> back());
+        clearButton.setOnAction(actionEvent -> clearChat());
     }
 
     private void back() {
@@ -54,14 +66,48 @@ public class MainpageController {
         }
     }
 
+    private void switchChat() {
+        String newContact = contactListView.getSelectionModel().getSelectedItem();
+        if (newContact != null && !newContact.equals(selectedContact)) {
+            selectedContact = newContact;  // 更新当前选中的联系人
+            clearChat(); // 清空聊天界面
+
+        }
+    }
+
     private void sendMessage() {
         String message = messageInput.getText();
         if (!message.isEmpty()) {
-            Text messageText = new Text(message);
-            messageText.setStyle("-fx-background-color: #E0FFE0; -fx-padding: 10; -fx-background-radius: 10;");
-            chatBox.getChildren().add(messageText);
+            displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0"); // 显示当前用户的消息
             messageInput.clear();
             chatScrollPane.setVvalue(1.0); // Scroll to the bottom
         }
+    }
+
+    private void displayMessage(String sender, String message, Pos alignment, String bgColor) {
+        // 创建一个 VBox 包含名称和消息
+        VBox messageContainer = new VBox(2);
+        messageContainer.setAlignment(alignment);
+
+        // 创建名称文本
+        Text senderText = new Text(sender);
+        senderText.setStyle("-fx-font-weight: bold; -fx-padding: 2;");
+
+        // 创建消息文本
+        Text messageText = new Text(message);
+        messageText.setStyle("-fx-background-color: " + bgColor + "; -fx-padding: 10; -fx-background-radius: 10;");
+
+        // 将名称和消息添加到 VBox
+        messageContainer.getChildren().addAll(senderText,messageText);
+
+        // 使用 HBox 包含消息容器并根据对齐方式调整位置
+        HBox alignmentBox = new HBox(messageContainer);
+        alignmentBox.setAlignment(alignment);
+
+        chatBox.getChildren().add(alignmentBox);
+    }
+
+    private void clearChat() {
+        chatBox.getChildren().clear(); // 清除chatBox中的所有消息
     }
 }
