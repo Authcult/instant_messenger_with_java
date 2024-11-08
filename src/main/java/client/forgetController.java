@@ -14,17 +14,8 @@ import javafx.scene.control.Button;
 
 public class forgetController {
     @FXML
-    private TextField usernameField;
-    @FXML
-    private PasswordField newpasswordField;
-    @FXML
-    private PasswordField confirmpasswordField;
-    @FXML
-    private Button confirmbutton;
-    @FXML
     private Button back;
     public void initialize() {
-        confirmbutton.setOnAction(event -> handleconfirm());
         back.setOnAction(event -> handleback());
     }
 
@@ -38,9 +29,6 @@ public class forgetController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void handleconfirm() {
     }
 }
 

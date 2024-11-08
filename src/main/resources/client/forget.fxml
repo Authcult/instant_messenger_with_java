@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+
 
 <AnchorPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.forgetController">
     <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-
-        <Label style="-fx-font-size: 24;" text="忘记密码" textAlignment="RIGHT" textFill="WHITE" />
-
-        <TextField maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-      <TextField layoutX="21.0" layoutY="300.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="请输入新密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-      <PasswordField layoutX="21.0" layoutY="245.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="39.0" prefWidth="232.0" promptText="再次输入密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-
-        <Button id="confirmbutton" fx:id="confirmbutton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="39.0" prefWidth="130.0" style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="确定" />
+      <children>
+      
+                 <Label style="-fx-font-size: 24;" text="请联系管理员修改密码" textAlignment="RIGHT" textFill="WHITE" />
+      </children>
     </VBox>
    <Button id="back" fx:id="back" mnemonicParsing="false" prefHeight="32.0" prefWidth="43.0" style="-fx-background-color: transparent;" text="&lt;" textFill="WHITE">
       <font>
