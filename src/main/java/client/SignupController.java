@@ -7,7 +7,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Objects;
 
 public class SignupController {
     @FXML
@@ -15,14 +20,29 @@ public class SignupController {
     @FXML
     private PasswordField passwordField;
     @FXML
+    private PasswordField passwordField2;
+    @FXML
     private Button confirmbutton;
     @FXML
     private Button back;
+
+    private BufferedReader in;
+    private PrintWriter out;
+    private Socket socket;
+
     public void initialize() {
-        confirmbutton.setOnAction(event -> handleconfirm());
+        confirmbutton.setOnAction(event -> {
+            try {
+                handleconfirm();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         back.setOnAction(event -> handleback());
     }
-
+    public void setSocket(Socket socket){
+        this.socket = socket;
+    }
     private void handleback() {
         try {
             // Load the main chat interface
@@ -35,7 +55,15 @@ public class SignupController {
         }
     }
 
-    private void handleconfirm() {
+    private void handleconfirm() throws IOException {
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String password2 = passwordField2.getText();
+        if (Objects.equals(password, password2)&& !Objects.equals(username, "")&& !Objects.equals(password, "")&& !Objects.equals(password2, "")) {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(MessageType.CreateUser+" "+username+" "+password);
+        }
     }
 }
 

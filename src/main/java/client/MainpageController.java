@@ -170,7 +170,6 @@ public class MainpageController {
     @FXML
     public void initialize() {
         contactListView.getItems().addAll("Contact 1", "Contact 2", "Contact 3");
-
         contactListView.setOnMouseClicked(event -> switchChat());
         sendButton.setOnAction(event -> sendMessage());
         backButton.setOnAction(actionEvent -> back());

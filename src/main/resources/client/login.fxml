@@ -8,8 +8,8 @@
 
         <Label style="-fx-font-size: 24;" text="软件名待定" textFill="WHITE" />
 
-        <TextField maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
-        <PasswordField maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
+        <TextField fx:id="usernameField" maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
+        <PasswordField fx:id="passwordField" maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
 
         <Button fx:id="signInButton" style="-fx-background-color: #ff0080; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 10;" text="登录" />
 

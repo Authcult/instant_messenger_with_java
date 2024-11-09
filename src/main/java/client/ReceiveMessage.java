@@ -13,13 +13,14 @@ public class ReceiveMessage {
     private PrintWriter out;
     private MessageModel messageModel; // 共享的 MessageModel 实例
 
-    public ReceiveMessage(MessageModel messageModel) {
+    public ReceiveMessage(MessageModel messageModel,Socket socket) {
         this.messageModel = messageModel; // 保存MessageModel引用
+        this.socket=socket;
     }
 
     public void connectToServer() {
         try {
-            socket = new Socket("localhost", 5000);
+
 
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -27,9 +28,6 @@ public class ReceiveMessage {
             // 读取服务器消息
             String serverMessage;
             while ((serverMessage = in.readLine()) != null) {
-                if (serverMessage.equalsIgnoreCase("exit")) {
-                    break;
-                }
 
                 // 将服务器消息写入 MessageModel
                 messageModel.setMessage(serverMessage);
