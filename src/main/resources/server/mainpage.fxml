@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+
+<AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.MainpageController">
+
+   <!-- Sidebar for Contact List -->
+   <VBox layoutX="10" layoutY="10" prefHeight="580" prefWidth="250" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10;">
+      <TextField promptText="Search" style="-fx-background-radius: 15; -fx-padding: 10;" />
+      <ListView fx:id="contactListView" prefHeight="530" prefWidth="224.0" style="-fx-background-color: transparent;" />
+   </VBox>
+
+   <!-- Main Chat Area -->
+   <VBox layoutX="271.0" layoutY="4.0" prefHeight="594.0" prefWidth="641.0">
+      <!-- Chat Header -->
+      <HBox prefHeight="44.0" prefWidth="488.0" spacing="10">
+         <Label fx:id="stateLabel" prefHeight="40.0" prefWidth="86.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="当前状态：" />
+         <Label fx:id="cstateLabel" prefHeight="41.0" prefWidth="270.0" text="已开启" />
+         <Button fx:id="stateButton" prefHeight="37.0" prefWidth="58.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5;" text="开关" />
+      </HBox>
+      <HBox prefHeight="78.0" prefWidth="620.0">
+         <children>
+            <Label fx:id="numLabel" prefHeight="70.0" prefWidth="102.0" text="当前在线人数：" />
+            <Label fx:id="numStateLabel" prefHeight="70.0" prefWidth="193.0" text="0" />
+         </children>
+      </HBox>
+      <VBox prefHeight="289.0" prefWidth="620.0">
+         <children>
+          <Button fx:id="listButton" mnemonicParsing="false" prefHeight="63.0" prefWidth="211.0" text="1.查看用户的好友列表" />
+            <Button fx:id="deleteButton" mnemonicParsing="false" prefHeight="65.0" prefWidth="212.0" text="2.删除用户" />
+            <Button fx:id="chatHisButton" mnemonicParsing="false" prefHeight="70.0" prefWidth="211.0" text="3.查看聊天记录" />
+         </children>
+      </VBox>
+      <TextArea fx:id="log" prefHeight="210.0" prefWidth="655.0" />
+   </VBox>
+   <Line endX="261.60003662109375" endY="600.0" startX="261.60003662109375" startY="-2.28881845032447E-6" />
+   <Line endX="262.10003662109375" endY="112.09288787841797" startX="908.992919921875" startY="112.09288024902344" />
+   <Line endX="909.7929077148438" endY="389.0999755859375" startX="261.10003662109375" startY="389.1000061035156" />
+</AnchorPane>
