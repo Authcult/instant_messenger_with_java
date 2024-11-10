@@ -47,7 +47,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.net.Socket;
+
 public class LoginApp extends Application {
+
+    public static Socket socket;
 
     public static void main(String[] args) {
         launch(args);
@@ -55,6 +59,7 @@ public class LoginApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        socket = new Socket("localhost", 5000);
         primaryStage.setTitle("即时通讯 - 客户端");
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
@@ -62,8 +67,14 @@ public class LoginApp extends Application {
         Scene scene = new Scene(root, 255, 461);
         primaryStage.setScene(scene);
         primaryStage.show();
+        LoginController loginController = loader.getController();
+        loginController.setSocket(socket);
+    }
 
-
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        System.out.println("客户端关闭");
     }
 }
 

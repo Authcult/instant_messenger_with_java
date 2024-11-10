@@ -36,9 +36,13 @@ public class LoginController {
 
     private Socket socket;
 
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
     @FXML
     public void initialize() throws IOException {
-        socket = new Socket("localhost", 5000);
+
         signInButton.setOnAction(event -> {
             try {
                 handleSignIn();
@@ -57,15 +61,6 @@ public class LoginController {
             Stage stage = (Stage) forgetButton.getScene().getWindow();
             Scene scene = new Scene(fxmlLoader.load(), 255,461);
             stage.setScene(scene);
-            MessageModel messageModel = new MessageModel();
-            MainpageController mainpageController = fxmlLoader.getController();
-
-            // 将MessageModel传递给MainpageController
-            mainpageController.setMessageModel(messageModel);
-            // 创建web实例并启动连接
-
-            ReceiveMessage webClient = new ReceiveMessage(messageModel,socket);
-            new Thread(webClient::connectToServer).start();
         } catch (IOException e) {
             e.printStackTrace();
         }

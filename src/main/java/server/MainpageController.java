@@ -152,6 +152,8 @@ public class MainpageController {
             }).start();
             cstateLabel.setText("已开启");
         } else {
+            log.appendText("服务器已关闭。\n");
+            broadcastMessage("服务器已关闭。", null);
             stop();
             cstateLabel.setText("已关闭");
         }

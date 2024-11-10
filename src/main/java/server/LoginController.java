@@ -43,7 +43,7 @@ public class LoginController {
 
         username = usernameField.getText();
         password = passwordField.getText();
-        if (Objects.equals(username, "admin")&& Objects.equals(password, "123456")) {
+        if (Objects.equals(username, "admin")&& Objects.equals(password, "123")) {
             try {
 
                 // Load the main chat interface
