@@ -126,7 +126,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 
 public class MainpageController {
@@ -154,8 +158,17 @@ public class MainpageController {
 
     private String selectedContact = "";
 
+    private BufferedReader in;
+    private PrintWriter out;
+
+    private Socket socket;
+
     // 引入MessageModel
     private MessageModel messageModel;
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
 
     public void setMessageModel(MessageModel messageModel) {
         this.messageModel = messageModel;
@@ -168,7 +181,7 @@ public class MainpageController {
     }
 
     @FXML
-    public void initialize() {
+    public void initialize() throws IOException {
         contactListView.getItems().addAll("Contact 1", "Contact 2", "Contact 3");
         contactListView.setOnMouseClicked(event -> switchChat());
         sendButton.setOnAction(event -> sendMessage());
@@ -195,7 +208,9 @@ public class MainpageController {
 
     private void back() {
         try {
-            // Load the main chat interface
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            loginout();
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
             Stage stage = (Stage) backButton.getScene().getWindow();
             Scene scene = new Scene(fxmlLoader.load(), 255,461);
@@ -226,5 +241,9 @@ public class MainpageController {
 
     private void clearChat() {
         chatBox.getChildren().clear();
+    }
+
+    private void loginout() {
+        out.println(MessageType.Logout);
     }
 }

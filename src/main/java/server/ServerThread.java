@@ -67,6 +67,10 @@ public class ServerThread extends Thread{
                     String password = dataArray[1];
                     addUserToDatabase(username, password);
                 }
+
+                if (finalClientMessage.startsWith(MessageType.Logout)) {
+
+                }
             }
 
             // 关闭连接
@@ -96,6 +100,7 @@ public class ServerThread extends Thread{
         // 检查用户名和密码是否正确
         boolean isValidUser = validateUser(username, password);
         if (isValidUser) {
+            messageArea.appendText("用户"+username+"已上线\n");
             ot.println(username);
         } else {
             ot.println("false");
