@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.MainpageController">
+<AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.MainpageController">
 
    <!-- Sidebar for Contact List -->
    <VBox layoutX="10" layoutY="10" prefHeight="580" prefWidth="250" style="-fx-background-color: #F5F5F5; -fx-background-radius: 10;">
-      <TextField promptText="Search" style="-fx-background-radius: 15; -fx-padding: 10;" />
-      <ListView fx:id="contactListView" prefHeight="530" prefWidth="224.0" style="-fx-background-color: transparent;" />
+      <HBox prefHeight="39.0" prefWidth="250.0">
+         <children>
+            <TextField prefHeight="35.0" prefWidth="216.0" promptText="Search" style="-fx-background-radius: 15; -fx-padding: 10;" />
+            <Button fx:id="addFriendButton" mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" text="+" />
+         </children>
+      </HBox>
+      <ListView fx:id="contactListView" prefHeight="542.0" prefWidth="250.0" style="-fx-background-color: transparent;" />
    </VBox>
 
    <!-- Main Chat Area -->

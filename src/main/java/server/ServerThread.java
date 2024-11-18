@@ -67,7 +67,13 @@ public class ServerThread extends Thread{
                     String password = dataArray[1];
                     addUserToDatabase(username, password);
                 }
-
+                if (finalClientMessage.startsWith(MessageType.AddFriend)) {
+                    String data=finalClientMessage.substring(MessageType.AddFriend.length()+1);
+                    String[] dataArray=data.split(" ");
+                    String username = dataArray[0];
+                    String friendUsername = dataArray[1];
+                    addFriendToDatabase(username, friendUsername);
+                }
                 if (finalClientMessage.startsWith(MessageType.Logout)) {
 
                 }
@@ -78,6 +84,38 @@ public class ServerThread extends Thread{
             serverSocket.close();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
+        }
+    }
+    //根据用户名在数据库中查询用户id
+    private  int getUserId(String username) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT id FROM users WHERE username = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, username);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getInt("id");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+    private void addFriendToDatabase(String username, String friendUsername) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "INSERT INTO friendships (user_id, friend_id,status) VALUES (?, ?,?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, getUserId(username));
+                preparedStatement.setInt(2, getUserId(friendUsername));
+                preparedStatement.setString(3,"正常");
+                preparedStatement.executeUpdate();
+                System.out.println("添加好友成功: " +username + " 和 " + friendUsername);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("用户添加失败: " + e.getMessage());
         }
     }
 

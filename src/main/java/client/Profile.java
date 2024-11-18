@@ -1,10 +1,12 @@
 package client;
 
-public class profile {
+public class Profile {
     private String username;
     private String password;
     private String userID;
-
+    Profile(String username){
+        this.username = username;
+    }
     public String getUsername() {
         return username;
     }

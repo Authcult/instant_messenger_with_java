@@ -117,10 +117,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -131,6 +128,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Optional;
 
 
 public class MainpageController {
@@ -153,6 +151,8 @@ public class MainpageController {
     private Button backButton;
     @FXML
     private Button clearButton;
+    @FXML
+    private Button addFriendButton;
 
     private String currentUser = "Me";
 
@@ -163,7 +163,13 @@ public class MainpageController {
 
     private Socket socket;
 
+    private Profile user;
+
     // 引入MessageModel
+    public void loadProfile(Profile user) {
+        this.user = user;
+    }
+
     private MessageModel messageModel;
 
     public void setSocket(Socket socket) {
@@ -187,6 +193,26 @@ public class MainpageController {
         sendButton.setOnAction(event -> sendMessage());
         backButton.setOnAction(actionEvent -> back());
         clearButton.setOnAction(actionEvent -> clearChat());
+        addFriendButton.setOnAction(actionEvent -> {
+            try {
+                addFriend();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void addFriend() throws IOException {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("添加好友");
+        dialog.setHeaderText("请输入好友的用户名以添加好友");
+        dialog.setContentText("请输入您好友的用户名:");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(MessageType.AddFriend+" "+user.getUsername()+" "+result.get());;
+        }
     }
 
     private void switchChat() {

@@ -111,7 +111,8 @@ public class LoginController {
                     // 创建web实例并启动连接
                     System.out.println(socket);
                     mainpageController.setSocket(this.socket);
-
+                    Profile user = new Profile(username);
+                    mainpageController.loadProfile(user);
                     ReceiveMessage webClient = new ReceiveMessage(messageModel, socket);
                     new Thread(webClient::connectToServer).start();
                     break;
