@@ -2,6 +2,7 @@ module com.example.demo {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
+    requires gson;
     // 允许JavaFX模块访问 server 和 client 包
     opens server to javafx.graphics, javafx.fxml;
     opens client to javafx.graphics, javafx.fxml;

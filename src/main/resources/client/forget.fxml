@@ -10,7 +10,7 @@
     <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
       
-                 <Label style="-fx-font-size: 24;" text="请联系管理员修改密码" textAlignment="RIGHT" textFill="WHITE" />
+                 <Label style="-fx-font-size: 24;" text="请联系管理员找回密码" textAlignment="RIGHT" textFill="WHITE" />
       </children>
     </VBox>
    <Button id="back" fx:id="back" mnemonicParsing="false" prefHeight="32.0" prefWidth="43.0" style="-fx-background-color: transparent;" text="&lt;" textFill="WHITE">

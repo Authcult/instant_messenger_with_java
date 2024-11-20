@@ -122,13 +122,21 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+import java.io.*;
+import java.sql.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.util.Optional;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+
+import java.io.File;
 
 
 public class MainpageController {
@@ -153,17 +161,30 @@ public class MainpageController {
     private Button clearButton;
     @FXML
     private Button addFriendButton;
+    @FXML
+    private Button setAvatarButton;
 
     private String currentUser = "Me";
 
     private String selectedContact = "";
 
     private BufferedReader in;
+
     private PrintWriter out;
 
     private Socket socket;
 
-    private Profile user;
+    private Profile user= new Profile();
+
+
+
+    private Image userAvatar; // 当前用户头像
+
+    private final Image defaultAvatar = new Image(getClass().getResource(user.getAvatarPath()).toExternalForm());// 替换为默认头像路径
+
+    public MainpageController() throws IOException, URISyntaxException {
+    }
+
 
     // 引入MessageModel
     public void loadProfile(Profile user) {
@@ -188,6 +209,22 @@ public class MainpageController {
 
     @FXML
     public void initialize() throws IOException {
+// 检查 user 是否为 null
+        if (user != null) {
+            // 加载用户头像
+            String avatarPath = user.getAvatarPath();
+            File avatarFile = new File(avatarPath);
+            if (avatarFile.exists()) {
+                userAvatar = new Image(avatarFile.toURI().toString());
+            } else {
+                userAvatar = defaultAvatar; // 如果路径无效则使用默认头像
+            }
+        } else {
+            // 如果 user 为 null，则使用默认头像
+            userAvatar = defaultAvatar;
+        }
+
+        setAvatarButton.setOnAction(event -> setAvatar());
         contactListView.getItems().addAll("Contact 1", "Contact 2", "Contact 3");
         contactListView.setOnMouseClicked(event -> switchChat());
         sendButton.setOnAction(event -> sendMessage());
@@ -200,6 +237,7 @@ public class MainpageController {
                 throw new RuntimeException(e);
             }
         });
+        refreshFriendList();
     }
 
     private void addFriend() throws IOException {
@@ -215,6 +253,13 @@ public class MainpageController {
         }
     }
 
+    private void refreshFriendList() {
+        Platform.runLater(() -> {
+            contactListView.getItems().clear(); // 清空现有好友列表
+
+
+        });
+    }
     private void switchChat() {
         String newContact = contactListView.getSelectionModel().getSelectedItem();
         if (newContact != null && !newContact.equals(selectedContact)) {
@@ -250,6 +295,10 @@ public class MainpageController {
             VBox messageContainer = new VBox(2);
             messageContainer.setAlignment(alignment);
 
+            ImageView avatarView = new ImageView(userAvatar != null ? userAvatar : defaultAvatar);
+            avatarView.setFitWidth(40);
+            avatarView.setFitHeight(40);
+
             Text senderText = new Text(sender);
             senderText.setStyle("-fx-font-weight: bold; -fx-padding: 2;");
 
@@ -258,16 +307,40 @@ public class MainpageController {
 
             messageContainer.getChildren().addAll(senderText, messageText);
 
-            HBox alignmentBox = new HBox(messageContainer);
+            HBox alignmentBox = new HBox();
+            if (alignment == Pos.CENTER_LEFT) {
+                alignmentBox.getChildren().addAll(avatarView, messageContainer);
+            } else {
+                alignmentBox.getChildren().addAll(messageContainer, avatarView);
+            }
             alignmentBox.setAlignment(alignment);
+            alignmentBox.setSpacing(10);
 
             chatBox.getChildren().add(alignmentBox);
         });
     }
 
+
+
+    private void setAvatar() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("选择头像图片");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        File selectedFile = fileChooser.showOpenDialog(setAvatarButton.getScene().getWindow());
+        if (selectedFile != null) {
+            userAvatar = new Image(selectedFile.toURI().toString());
+
+        }
+    }
+
+
     private void clearChat() {
         chatBox.getChildren().clear();
     }
+
 
     private void loginout() {
         out.println(MessageType.Logout);

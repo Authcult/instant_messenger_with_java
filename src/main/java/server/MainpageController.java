@@ -18,12 +18,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+
 public class MainpageController {
 
     private ServerSocket serverSocket;
     private Socket socket;
 
     private static Set<ServerThread> ServerThreads = Collections.synchronizedSet(new HashSet<>());
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "123";
+
     @FXML
     private TextField inputField;
     @FXML
@@ -78,6 +89,7 @@ public class MainpageController {
         deleteButton.setOnAction(event -> deleteContact());
         chatHisButton.setOnAction(event -> chatHistory());
 
+        loadUserList();
     }
 
     private void startServer() throws IOException {
@@ -159,7 +171,31 @@ public class MainpageController {
         }
     }
 
+    private void loadUserList() {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement statement = connection.createStatement()) {
+
+            String query = "SELECT username FROM users"; // 假设 user 表中有 username 列
+            ResultSet resultSet = statement.executeQuery(query);
+
+            contactListView.getItems().clear(); // 清空现有列表
+
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                contactListView.getItems().add(username); // 添加到列表视图
+            }
+
+            log.appendText("用户列表已加载。\n");
+        } catch (Exception e) {
+            log.appendText("加载用户列表时出错: " + e.getMessage() + "\n");
+            e.printStackTrace();
+        }
+    }
+
+
     private void listContacts() {
+            loadUserList();
+            log.appendText("用户列表已刷新。\n");
     }
 
     private void deleteContact() {
