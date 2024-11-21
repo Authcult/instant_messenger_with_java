@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URISyntaxException;
 
 public class LoginController {
 
@@ -102,7 +103,7 @@ public class LoginController {
                     // 初始化MessageModel
                     MessageModel messageModel = new MessageModel();
 
-                    Scene scene = new Scene(fxmlLoader.load(), 900, 600);
+                    Scene scene = new Scene(fxmlLoader.load(), 900, 630);
                     stage.setScene(scene);
                     MainpageController mainpageController = fxmlLoader.getController();
 
@@ -118,6 +119,8 @@ public class LoginController {
                     break;
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
                 }
             }else{
                 usernameField.clear();

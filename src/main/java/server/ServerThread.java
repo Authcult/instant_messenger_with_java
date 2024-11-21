@@ -87,7 +87,7 @@ public class ServerThread extends Thread{
         }
     }
     //根据用户名在数据库中查询用户id
-    private  int getUserId(String username) {
+    private int getUserId(String username) {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "SELECT id FROM users WHERE username = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -112,6 +112,14 @@ public class ServerThread extends Thread{
                 preparedStatement.setString(3,"正常");
                 preparedStatement.executeUpdate();
                 System.out.println("添加好友成功: " +username + " 和 " + friendUsername);
+            }
+            String sql2 = "INSERT INTO friendships (user_id, friend_id,status) VALUES (?, ?,?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql2)) {
+                preparedStatement.setInt(1, getUserId(friendUsername));
+                preparedStatement.setInt(2, getUserId(username));
+                preparedStatement.setString(3,"正常");
+                preparedStatement.executeUpdate();
+                System.out.println("添加好友成功: " +friendUsername + " 和 " + username);
             }
         } catch (SQLException e) {
             e.printStackTrace();

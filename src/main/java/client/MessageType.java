@@ -12,5 +12,7 @@ public class MessageType {
     public static final String BroadcastMessage = "broadcastMessage";
 
     public static final String Logout = "logout";
+
+    public static final String GetFriendList ="getfriendlist";
 }
 
