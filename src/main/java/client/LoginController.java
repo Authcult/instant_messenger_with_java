@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
+import javafx.scene.control.Alert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,8 +42,17 @@ public class LoginController {
     }
 
     @FXML
-    public void initialize() throws IOException {
-
+    public void initialize()  {
+        try {
+            socket = new Socket("localhost", 5000);
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("服务器未上线");
+            alert.setHeaderText(null);
+            alert.setContentText("服务器暂未上线请联系管理员!");
+            alert.showAndWait();
+            throw new RuntimeException(e);
+        }
         signInButton.setOnAction(event -> {
             try {
                 handleSignIn();
@@ -114,7 +123,8 @@ public class LoginController {
                     mainpageController.setSocket(this.socket);
                     Profile user = new Profile(username);
                     mainpageController.loadProfile(user);
-                    ReceiveMessage webClient = new ReceiveMessage(messageModel, socket);
+                    ClientThread webClient = new ClientThread(messageModel, socket);
+                    mainpageController.setClientThread(webClient);
                     new Thread(webClient::connectToServer).start();
                     break;
                 } catch (IOException e) {

@@ -1,8 +1,5 @@
 package server;
 
-import client.MainpageController;
-import client.MessageModel;
-import client.ReceiveMessage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

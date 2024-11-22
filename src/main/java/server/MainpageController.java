@@ -102,7 +102,7 @@ public class MainpageController {
             log.appendText("客户端IP地址: " + socket.getRemoteSocketAddress() + "\n");
 
             // 创建线程处理客户端请求
-            ServerThread serverThread = new ServerThread(socket,log);
+            ServerThread serverThread = new ServerThread(socket,log,contactListView);
             serverThread.start();
             ServerThreads.add(serverThread);
         }

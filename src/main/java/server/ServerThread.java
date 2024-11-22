@@ -2,15 +2,13 @@ package server;
 
 
 import client.MessageType;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+
 import java.io.*;
 import java.net.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerThread extends Thread{
     private TextArea messageArea;
@@ -19,26 +17,26 @@ public class ServerThread extends Thread{
     private BufferedReader in;
     private PrintWriter ot;
 
+    public ListView<String> contactListView;
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
 
 
     public void sendMessage(String message) {
-        ot.println(message);
+        ot.println(MessageType.SendServerMessage+" "+message);
     }
 
-    public ServerThread(Socket socket, TextArea messageArea) {
+    public ServerThread(Socket socket, TextArea messageArea, ListView<String> contactListView) throws IOException {
         this.socket = socket;
         this.messageArea = messageArea;
-
+        this.contactListView = contactListView;
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        ot = new PrintWriter(socket.getOutputStream(), true);
     }
     public void run() {
         try {
             messageArea.appendText("客户端已连接\n");
-
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            ot = new PrintWriter(socket.getOutputStream(), true);
 
 
             // 读取客户端消息
@@ -74,6 +72,13 @@ public class ServerThread extends Thread{
                     String friendUsername = dataArray[1];
                     addFriendToDatabase(username, friendUsername);
                 }
+                if (finalClientMessage.startsWith(MessageType.GetFriendList)) {
+                    String data=finalClientMessage.substring(MessageType.GetFriendList.length()+1);
+                    String[] dataArray=data.split(" ");
+                    String username = dataArray[0];
+                    List<String> friendlist=getFriendIdsByUserId(getUserId(username));
+                    ot.println(MessageType.Friendlist+" "+String.join(",", friendlist));
+                }
                 if (finalClientMessage.startsWith(MessageType.Logout)) {
 
                 }
@@ -103,6 +108,44 @@ public class ServerThread extends Thread{
         }
         return 0;
     }
+    //根据用户名在数据库中查询用户id
+    private String getUsernameById(int id) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT username FROM users WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, id);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("username");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    //获取用户的好友列表
+    private List<String> getFriendIdsByUserId(int userId) {
+        List<String> friendIds = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT friend_id FROM friendships WHERE user_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int friendId = resultSet.getInt("friend_id");
+                        friendIds.add(getUsernameById(friendId));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("获取好友ID列表时出错: " + e.getMessage());
+        }
+        return friendIds;
+    }
+
     private void addFriendToDatabase(String username, String friendUsername) {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "INSERT INTO friendships (user_id, friend_id,status) VALUES (?, ?,?)";
@@ -136,6 +179,7 @@ public class ServerThread extends Thread{
                 preparedStatement.executeUpdate();
                 System.out.println("用户添加成功: " + username);
             }
+            listContacts();
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("用户添加失败: " + e.getMessage());
@@ -166,6 +210,33 @@ public class ServerThread extends Thread{
                 }
             }
         }
+    }
+
+    private void loadUserList() {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement statement = connection.createStatement()) {
+
+            String query = "SELECT username FROM users"; // 假设 user 表中有 username 列
+            ResultSet resultSet = statement.executeQuery(query);
+
+            contactListView.getItems().clear(); // 清空现有列表
+
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                contactListView.getItems().add(username); // 添加到列表视图
+            }
+
+            messageArea.appendText("用户列表已加载。\n");
+        } catch (Exception e) {
+            messageArea.appendText("加载用户列表时出错: " + e.getMessage() + "\n");
+            e.printStackTrace();
+        }
+    }
+
+
+    private void listContacts() {
+            loadUserList();
+            messageArea.appendText("用户列表已刷新。\n");
     }
 
     public void closeConnection() {

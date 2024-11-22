@@ -5,7 +5,7 @@ import javafx.beans.property.StringProperty;
 
 public class MessageModel {
     private final StringProperty message = new SimpleStringProperty();
-
+    private final StringProperty friendlist = new SimpleStringProperty();
     public StringProperty messageProperty() {
         return message;
     }
