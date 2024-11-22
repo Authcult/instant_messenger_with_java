@@ -7,12 +7,16 @@ public class MessageType {
 
     public static final String SendMessage = "sendMessage";
 
+    public static final String SendServerMessage = "sendServerMessage";
+
     public static final String AddFriend = "addFriend";
 
     public static final String BroadcastMessage = "broadcastMessage";
 
     public static final String Logout = "logout";
 
-    public static final String GetFriendList ="getfriendlist";
+    public static final String GetFriendList ="getFriendList";
+
+    public static final String Friendlist = "friendList";
 }
 

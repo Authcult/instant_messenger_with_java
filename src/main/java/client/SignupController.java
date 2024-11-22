@@ -6,11 +6,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import MessageType.*;
+import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
 
@@ -26,8 +23,10 @@ public class SignupController {
     @FXML
     private Button back;
 
-    private BufferedReader in;
-    private PrintWriter out;
+//    private BufferedReader in;
+//    private PrintWriter out;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
     private Socket socket;
 
     public void initialize() {
@@ -60,9 +59,10 @@ public class SignupController {
         String password = passwordField.getText();
         String password2 = passwordField2.getText();
         if (Objects.equals(password, password2)&& !Objects.equals(username, "")&& !Objects.equals(password, "")&& !Objects.equals(password2, "")) {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(MessageType.CreateUser+" "+username+" "+password);
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            CreateUser createUser = new CreateUser(username, password);
+            oos.writeObject(createUser);
+            oos.flush();
         }
     }
 }

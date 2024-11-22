@@ -7,11 +7,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import javafx.scene.control.Alert;
+import MessageType.*;
+import java.io.*;
 import java.net.Socket;
 import java.net.URISyntaxException;
 
@@ -32,8 +30,11 @@ public class LoginController {
     @FXML
     private Button forgetButton;
 
-    private BufferedReader in;
-    private PrintWriter out;
+//    private BufferedReader in;
+//    private PrintWriter out;
+
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
 
     private Socket socket;
 
@@ -42,12 +43,21 @@ public class LoginController {
     }
 
     @FXML
-    public void initialize() throws IOException {
-
+    public void initialize()  {
+        try {
+            socket = new Socket("localhost", 5000);
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("服务器未上线");
+            alert.setHeaderText(null);
+            alert.setContentText("服务器暂未上线请联系管理员!");
+            alert.showAndWait();
+            throw new RuntimeException(e);
+        }
         signInButton.setOnAction(event -> {
             try {
                 handleSignIn();
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -86,15 +96,17 @@ public class LoginController {
 
     }
 
-    private void handleSignIn() throws IOException {
+    private void handleSignIn() throws IOException, ClassNotFoundException {
         String username = usernameField.getText();
         String password = passwordField.getText();
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
-        out.println(MessageType.Login+" "+username+" "+password);
-        String serverMessage;
-        while ((serverMessage = in.readLine()) != null) {
-            if (!serverMessage.equals("false")){
+        oos = new ObjectOutputStream(socket.getOutputStream());
+        Login login = new Login(username, password);
+        oos.writeObject(login);
+        oos.flush();
+        ois = new ObjectInputStream(socket.getInputStream());
+        Object serverMessage;
+        while ((serverMessage = ois.readObject())!=null) {
+            if (serverMessage.getClass()== CommonMessage.class&&(!((CommonMessage) serverMessage).getMessage().equals("false"))){
                 try {
 
                     // Load the main chat interface
@@ -114,7 +126,7 @@ public class LoginController {
                     mainpageController.setSocket(this.socket);
                     Profile user = new Profile(username);
                     mainpageController.loadProfile(user);
-                    ReceiveMessage webClient = new ReceiveMessage(messageModel, socket);
+                    ClientThread webClient = new ClientThread(messageModel, socket);
                     new Thread(webClient::connectToServer).start();
                     break;
                 } catch (IOException e) {

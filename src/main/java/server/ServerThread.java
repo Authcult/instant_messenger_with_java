@@ -2,79 +2,76 @@ package server;
 
 
 import client.MessageType;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
+import MessageType.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import javafx.application.Platform;
+
 import java.io.*;
 import java.net.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerThread extends Thread{
     private TextArea messageArea;
     private ServerSocket serverSocket;
     private Socket socket;
-    private BufferedReader in;
-    private PrintWriter ot;
+//    private BufferedReader in;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
 
+    public ListView<String> contactListView;
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
 
 
-    public void sendMessage(String message) {
-        ot.println(message);
+    public void sendMessage(String message) throws IOException {
+        SendServerMessage sendServerMessage = new SendServerMessage(message);
+        oos.writeObject(sendServerMessage);
+        oos.flush();
     }
 
-    public ServerThread(Socket socket, TextArea messageArea) {
+    public ServerThread(Socket socket, TextArea messageArea, ListView<String> contactListView) throws IOException {
         this.socket = socket;
         this.messageArea = messageArea;
-
+        this.contactListView = contactListView;
+        oos = new ObjectOutputStream(socket.getOutputStream());
     }
     public void run() {
         try {
             messageArea.appendText("客户端已连接\n");
 
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            ot = new PrintWriter(socket.getOutputStream(), true);
-
-
             // 读取客户端消息
-            String clientMessage;
-            while ((clientMessage = in.readLine()) != null) {
-                String finalClientMessage = clientMessage;
+            Object clientMessage;
+
+            while (true) {
+                ois = new ObjectInputStream(socket.getInputStream());
+                clientMessage = ois.readObject();
+                Object finalClientMessage = clientMessage;
                 javafx.application.Platform.runLater(() ->
-                        messageArea.appendText("客户端: " + finalClientMessage + "\n")
+                        messageArea.appendText("客户端: " + finalClientMessage.toString() + "\n")
                 );
-
-                if (clientMessage.equalsIgnoreCase("exit")) {
-                    break;
+                if (clientMessage == null) {
+                        break;
                 }
 
-                if (finalClientMessage.startsWith(MessageType.Login)) {
-                    String data=finalClientMessage.substring(MessageType.Login.length()+1);
-                    String[] dataArray=data.split(" ");
-                    String username = dataArray[0];
-                    String password = dataArray[1];
-                    checkAccess(username, password);
+                if (finalClientMessage instanceof Login) {
+                    checkAccess(((Login) finalClientMessage).getUsername(),((Login) finalClientMessage).getPassword());
                 }
-                if (finalClientMessage.startsWith(MessageType.CreateUser)) {
-                    String data=finalClientMessage.substring(MessageType.CreateUser.length()+1);
-                    String[] dataArray=data.split(" ");
-                    String username = dataArray[0];
-                    String password = dataArray[1];
-                    addUserToDatabase(username, password);
+                if (finalClientMessage instanceof CreateUser) {
+                    addUserToDatabase(((CreateUser) finalClientMessage).getUsername(),((CreateUser) finalClientMessage).getPassword());
                 }
-                if (finalClientMessage.startsWith(MessageType.AddFriend)) {
-                    String data=finalClientMessage.substring(MessageType.AddFriend.length()+1);
-                    String[] dataArray=data.split(" ");
-                    String username = dataArray[0];
-                    String friendUsername = dataArray[1];
-                    addFriendToDatabase(username, friendUsername);
+                if (finalClientMessage instanceof AddFriend) {
+                    addFriendToDatabase(((AddFriend) finalClientMessage).getUsername(),((AddFriend) finalClientMessage).getFriendName());
                 }
-                if (finalClientMessage.startsWith(MessageType.Logout)) {
+                if (finalClientMessage instanceof GetFriendList) {
+                    List<String> list=getFriendIdsByUserId(getUserId(((GetFriendList) finalClientMessage).getUsername()));
+                    FriendList friendList=new FriendList(list);
+                    oos.writeObject(friendList);
+                    oos.flush();
+                }
+                if (finalClientMessage instanceof Logout) {
 
                 }
             }
@@ -84,6 +81,8 @@ public class ServerThread extends Thread{
             serverSocket.close();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
     //根据用户名在数据库中查询用户id
@@ -103,6 +102,44 @@ public class ServerThread extends Thread{
         }
         return 0;
     }
+    //根据用户名在数据库中查询用户id
+    private String getUsernameById(int id) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT username FROM users WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, id);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("username");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    //获取用户的好友列表
+    private List<String> getFriendIdsByUserId(int userId) {
+        List<String> friendIds = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT friend_id FROM friendships WHERE user_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int friendId = resultSet.getInt("friend_id");
+                        friendIds.add(getUsernameById(friendId));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("获取好友ID列表时出错: " + e.getMessage());
+        }
+        return friendIds;
+    }
+
     private void addFriendToDatabase(String username, String friendUsername) {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "INSERT INTO friendships (user_id, friend_id,status) VALUES (?, ?,?)";
@@ -136,20 +173,24 @@ public class ServerThread extends Thread{
                 preparedStatement.executeUpdate();
                 System.out.println("用户添加成功: " + username);
             }
+            listContacts();
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("用户添加失败: " + e.getMessage());
         }
     }
 
-    private void checkAccess(String username, String password) throws SQLException {
+    private void checkAccess(String username, String password) throws SQLException, IOException {
         // 检查用户名和密码是否正确
         boolean isValidUser = validateUser(username, password);
         if (isValidUser) {
             messageArea.appendText("用户"+username+"已上线\n");
-            ot.println(username);
+            CommonMessage loginCheck = new CommonMessage(username);
+            oos.writeObject(loginCheck);
+            oos.flush();
         } else {
-            ot.println("false");
+            oos.writeObject(new CommonMessage("false"));
+            oos.flush();
         }
     }
 
@@ -166,6 +207,40 @@ public class ServerThread extends Thread{
                 }
             }
         }
+    }
+
+    private void loadUserList() {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement statement = connection.createStatement()) {
+
+            String query = "SELECT username FROM users";
+
+            List<String> usernames = new ArrayList<>();
+            try (ResultSet resultSet = statement.executeQuery(query)) {
+                while (resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    usernames.add(username);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            // 在JavaFX Application Thread中更新UI
+            Platform.runLater(() -> {
+                contactListView.getItems().clear();
+                contactListView.getItems().addAll(usernames);
+                messageArea.appendText("用户列表加载成功\n");
+            });
+        } catch (Exception e) {
+            messageArea.appendText("加载用户列表时出错: " + e.getMessage() + "\n");
+            e.printStackTrace();
+        }
+    }
+
+
+    private void listContacts() {
+            loadUserList();
+            messageArea.appendText("用户列表已刷新。\n");
     }
 
     public void closeConnection() {

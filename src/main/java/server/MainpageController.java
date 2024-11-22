@@ -77,7 +77,13 @@ public class MainpageController {
         inputField.setPromptText("输入消息...");
 
         // Set button action
-        sendButton.setOnAction(event -> Send());
+        sendButton.setOnAction(event -> {
+            try {
+                Send();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         stateButton.setOnAction(event -> {
             try {
                 toggleState();
@@ -102,13 +108,13 @@ public class MainpageController {
             log.appendText("客户端IP地址: " + socket.getRemoteSocketAddress() + "\n");
 
             // 创建线程处理客户端请求
-            ServerThread serverThread = new ServerThread(socket,log);
+            ServerThread serverThread = new ServerThread(socket,log,contactListView);
             serverThread.start();
             ServerThreads.add(serverThread);
         }
     }
 
-    private void Send() {
+    private void Send() throws IOException {
         String message = inputField.getText();
         if (!message.isEmpty()) {
             broadcastMessage(message, null);
@@ -117,7 +123,7 @@ public class MainpageController {
         }
     }
 
-    public static void broadcastMessage(String message, ServerThread excludeseverThread) {
+    public static void broadcastMessage(String message, ServerThread excludeseverThread) throws IOException {
         synchronized (ServerThreads) {
             for (ServerThread serverThread : ServerThreads) {
                 if (serverThread!= excludeseverThread) {
@@ -129,7 +135,6 @@ public class MainpageController {
 
 
     public void stop() throws Exception {
-
 
         // 关闭所有客户端连接
         synchronized (ServerThreads) {

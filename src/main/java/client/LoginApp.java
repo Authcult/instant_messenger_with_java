@@ -61,33 +61,13 @@ public class LoginApp extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage)  {
-        try {
-            socket = new Socket("localhost", 5000);
+    public void start(Stage primaryStage) throws IOException {
             primaryStage.setTitle("即时通讯 - 客户端");
-
             FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 255, 461);
             primaryStage.setScene(scene);
             primaryStage.show();
-            LoginController loginController = loader.getController();
-            loginController.setSocket(socket);
-        } catch (UnknownHostException e) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("服务器未上线");
-            alert.setHeaderText(null);
-            alert.setContentText("服务器暂未上线请联系管理员!");
-            alert.showAndWait();
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("服务器未上线");
-            alert.setHeaderText(null);
-            alert.setContentText("服务器暂未上线请联系管理员!");
-            alert.showAndWait();
-            throw new RuntimeException(e);
-        }
     }
 
     @Override

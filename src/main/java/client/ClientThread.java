@@ -5,15 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 
-public class ReceiveMessage {
+public class ClientThread {
 
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     private MessageModel messageModel; // 共享的 MessageModel 实例
 
-    public ReceiveMessage(MessageModel messageModel,Socket socket) {
+    public ClientThread(MessageModel messageModel, Socket socket) {
         this.messageModel = messageModel; // 保存MessageModel引用
         this.socket=socket;
     }
@@ -28,9 +30,19 @@ public class ReceiveMessage {
             // 读取服务器消息
             String serverMessage;
             while ((serverMessage = in.readLine()) != null) {
+                String finalServerMessage = serverMessage;
 
-                // 将服务器消息写入 MessageModel
-                messageModel.setMessage(serverMessage);
+                if (finalServerMessage.startsWith(MessageType.SendServerMessage)) {
+                    String data=finalServerMessage.substring(MessageType.SendServerMessage.length()+1);
+                    // 将服务器消息写入 MessageModel
+                    messageModel.setMessage(data);
+                }
+                if (finalServerMessage.startsWith(MessageType.Friendlist)) {
+                    String data=finalServerMessage.substring(MessageType.Friendlist.length()+1);
+                    List<String> friendList = Arrays.asList(data.split(","));
+                    System.out.println(friendList);
+                }
+
             }
 
             // 关闭连接
