@@ -1,5 +1,6 @@
 package server;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -74,6 +75,7 @@ public class MainpageController {
     private void initialize() {
         // Set initial label text
         updateCStateLabel();
+        updateNumStateLabel();
         inputField.setPromptText("输入消息...");
 
         // Set button action
@@ -103,11 +105,23 @@ public class MainpageController {
 
             // 创建线程处理客户端请求
             ServerThread serverThread = new ServerThread(socket,log,contactListView);
+            serverThread.setCallback(this::onThreadClosed);
             serverThread.start();
             ServerThreads.add(serverThread);
+            updateNumStateLabel();
         }
     }
+    private void updateNumStateLabel() {
+        int threadCount = ServerThreads.size();
+        Platform.runLater(() -> numStateLabel.setText(String.valueOf(threadCount)));
 
+    }
+    public void onThreadClosed(ServerThread thread) {
+        synchronized (ServerThreads) {
+            ServerThreads.remove(thread);
+            updateNumStateLabel();
+        }
+    }
     private void Send() {
         String message = inputField.getText();
         if (!message.isEmpty()) {
@@ -204,4 +218,5 @@ public class MainpageController {
     private void chatHistory() {
 
     }
+
 }

@@ -32,6 +32,8 @@ import java.io.File;
 public class MainpageController {
 
     @FXML
+    public Label contactNameLabel;
+    @FXML
     private ListView<String> contactListView;
 
     @FXML
@@ -139,6 +141,7 @@ public class MainpageController {
                 throw new RuntimeException(e);
             }
         });
+        selectedContact="服务器";
         refreshFriendList();
     }
 
@@ -175,6 +178,11 @@ public class MainpageController {
         if (newContact != null && !newContact.equals(selectedContact)) {
             selectedContact = newContact;
             clearChat();
+            if (selectedContact.equals("服务器")){
+                contactNameLabel.setText("正在与["+selectedContact+"]通信");
+            }else {
+                contactNameLabel.setText("正在与[" + selectedContact + "]聊天");
+            }
         }
     }
 
@@ -197,6 +205,15 @@ public class MainpageController {
             Scene scene = new Scene(fxmlLoader.load(), 255,461);
             stage.setScene(scene);
         } catch (IOException e) {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
+            Stage stage = (Stage) backButton.getScene().getWindow();
+            Scene scene = null;
+            try {
+                scene = new Scene(fxmlLoader.load(), 255,461);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            stage.setScene(scene);
             e.printStackTrace();
         }
     }

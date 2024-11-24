@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,8 +54,8 @@ public class ClientThread extends Thread{
                 }
                 if (finalServerMessage.startsWith(MessageType.Friendlist)) {
                     String data=finalServerMessage.substring(MessageType.Friendlist.length()+1);
-                    List<String> friendList = Arrays.asList(data.split(","));
-                    System.out.println(friendList);
+                    List<String> friendList =new ArrayList<>(Arrays.asList(data.split(",")));
+                    friendList.add(0,"服务器");
                     updateFriendList(friendList);
                 }
 

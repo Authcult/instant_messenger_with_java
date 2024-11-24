@@ -3,6 +3,7 @@ package server;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -57,6 +58,11 @@ public class LoginController {
         else{
             usernameField.clear();
             passwordField.clear();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("账号或密码错误");
+            alert.setHeaderText(null);
+            alert.setContentText("账号或密码错误，请检查!");
+            alert.showAndWait();
         }
     }
 }

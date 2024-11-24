@@ -18,11 +18,18 @@ public class ServerThread extends Thread{
     private PrintWriter ot;
 
     public ListView<String> contactListView;
+    private ServerThreadCallback callback;
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
 
+    public interface ServerThreadCallback {
+        void onThreadClosed(ServerThread thread);
+    }
 
+    public void setCallback(ServerThreadCallback callback) {
+        this.callback = callback;
+    }
     public void sendMessage(String message) {
         ot.println(MessageType.SendServerMessage+" "+message);
     }
@@ -80,13 +87,15 @@ public class ServerThread extends Thread{
                     ot.println(MessageType.Friendlist+" "+String.join(",", friendlist));
                 }
                 if (finalClientMessage.startsWith(MessageType.Logout)) {
-
+                    closeConnection();
+                    break;
                 }
             }
-
-            // 关闭连接
-            socket.close();
-            serverSocket.close();
+            if (socket != null && !socket.isClosed()) {
+                // 关闭连接
+                socket.close();
+                serverSocket.close();
+            }
         } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
@@ -241,9 +250,16 @@ public class ServerThread extends Thread{
 
     public void closeConnection() {
         try {
-            socket.close();
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+                messageArea.appendText("客户端已断开连接: " + socket.getRemoteSocketAddress() + "\n");
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            messageArea.appendText("关闭客户端连接时出错: " + e.getMessage() + "\n");
+        } finally {
+            if (callback != null) {
+                callback.onThreadClosed(this);
+            }
         }
     }
 }

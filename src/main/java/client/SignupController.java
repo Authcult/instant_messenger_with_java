@@ -2,6 +2,7 @@ package client;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
@@ -46,6 +47,9 @@ public class SignupController {
     private void handleback() {
         try {
             // Load the main chat interface
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(MessageType.Logout);
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
             Stage stage = (Stage) back.getScene().getWindow();
             Scene scene = new Scene(fxmlLoader.load(), 255,461);
@@ -63,6 +67,11 @@ public class SignupController {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
             out.println(MessageType.CreateUser+" "+username+" "+password);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("账号注册成功");
+            alert.setHeaderText(null);
+            alert.setContentText("账号注册成功!");
+            alert.showAndWait();
         }
     }
 }
