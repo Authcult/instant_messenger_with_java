@@ -2,6 +2,7 @@ package server;
 
 
 import client.MessageType;
+import javafx.application.Platform;
 import javafx.scene.control.*;
 
 import java.io.*;
@@ -16,19 +17,42 @@ public class ServerThread extends Thread{
     private Socket socket;
     private BufferedReader in;
     private PrintWriter ot;
-
     public ListView<String> contactListView;
-    private ServerThreadCallback callback;
+    private OnThreadClosedCallback onThreadClosedCallback;
+    private OnThreadOpenedCallback onThreadOpenedCallback;
+    private OnThreadSendCallback onThreadSendCallback;
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
+    private static int userid;
 
-    public interface ServerThreadCallback {
+    public int getUserid() {
+        return userid;
+    }
+
+    @FunctionalInterface
+    public interface OnThreadClosedCallback {
         void onThreadClosed(ServerThread thread);
     }
 
-    public void setCallback(ServerThreadCallback callback) {
-        this.callback = callback;
+    @FunctionalInterface
+    public interface OnThreadOpenedCallback {
+        void onThreadOpened(ServerThread thread);
+    }
+    @FunctionalInterface
+    public interface OnThreadSendCallback {
+        void onThreadsend(ServerThread thread);
+    }
+
+
+    public void setCallbacks(OnThreadClosedCallback onThreadClosedCallback, OnThreadOpenedCallback onThreadOpenedCallback,OnThreadSendCallback onThreadSendCallback) {
+        this.onThreadClosedCallback = onThreadClosedCallback;
+        this.onThreadOpenedCallback = onThreadOpenedCallback;
+        this.onThreadSendCallback = onThreadSendCallback;
+    }
+
+    public void sendMessage(int userid, int friendid, String message) {
+        //todo
     }
     public void sendMessage(String message) {
         ot.println(MessageType.SendServerMessage+" "+message);
@@ -43,14 +67,15 @@ public class ServerThread extends Thread{
     }
     public void run() {
         try {
-            messageArea.appendText("客户端已连接\n");
-
+            Platform.runLater(() -> {
+                messageArea.appendText("客户端已连接\n");
+            });
 
             // 读取客户端消息
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
                 String finalClientMessage = clientMessage;
-                javafx.application.Platform.runLater(() ->
+                Platform.runLater(() ->
                         messageArea.appendText("客户端: " + finalClientMessage + "\n")
                 );
 
@@ -64,6 +89,14 @@ public class ServerThread extends Thread{
                     String username = dataArray[0];
                     String password = dataArray[1];
                     checkAccess(username, password);
+                }
+                if (finalClientMessage.startsWith(MessageType.SendMessage)) {
+                    String data=finalClientMessage.substring(MessageType.SendMessage.length()+1);
+                    String[] dataArray=data.split(" ");
+                    String username = dataArray[0];
+                    String friendUsername = dataArray[1];
+                    String message = dataArray[2];
+                    sendMessage(getUserId(username), getUserId(friendUsername), message);
                 }
                 if (finalClientMessage.startsWith(MessageType.CreateUser)) {
                     String data=finalClientMessage.substring(MessageType.CreateUser.length()+1);
@@ -187,6 +220,8 @@ public class ServerThread extends Thread{
                 preparedStatement.setString(2, password);
                 preparedStatement.executeUpdate();
                 System.out.println("用户添加成功: " + username);
+                userid=getUserId(username);
+                onThreadOpened();
             }
             listContacts();
         } catch (SQLException e) {
@@ -199,8 +234,12 @@ public class ServerThread extends Thread{
         // 检查用户名和密码是否正确
         boolean isValidUser = validateUser(username, password);
         if (isValidUser) {
-            messageArea.appendText("用户"+username+"已上线\n");
+            Platform.runLater(() -> {
+                messageArea.appendText("用户"+username+"已上线\n");
+            });
             ot.println(username);
+            userid=getUserId(username);
+            onThreadOpened();
         } else {
             ot.println("false");
         }
@@ -227,18 +266,36 @@ public class ServerThread extends Thread{
 
             String query = "SELECT username FROM users"; // 假设 user 表中有 username 列
             ResultSet resultSet = statement.executeQuery(query);
-
-            contactListView.getItems().clear(); // 清空现有列表
-
-            while (resultSet.next()) {
-                String username = resultSet.getString("username");
-                contactListView.getItems().add(username); // 添加到列表视图
+            List<String> usernames = new ArrayList<>();
+            try {
+                while (resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    usernames.add(username);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
-            messageArea.appendText("用户列表已加载。\n");
+            Platform.runLater(() -> {
+                contactListView.getItems().clear(); // 清空联系人列表
+
+                for (String username : usernames) {
+                    contactListView.getItems().add(username); // 添加用户名到联系人列表
+                }
+
+                messageArea.appendText("用户列表加载完成\n");
+            });
         } catch (Exception e) {
-            messageArea.appendText("加载用户列表时出错: " + e.getMessage() + "\n");
-            e.printStackTrace();
+            Platform.runLater(() -> {
+                messageArea.appendText("加载用户列表失败: " + e.getMessage() + "\n");
+                e.printStackTrace();
+            });
         }
     }
 
@@ -248,17 +305,27 @@ public class ServerThread extends Thread{
             messageArea.appendText("用户列表已刷新。\n");
     }
 
+
+    public void onThreadOpened() {
+        if (onThreadOpenedCallback != null) {
+            onThreadOpenedCallback.onThreadOpened(this);
+        }
+    }
     public void closeConnection() {
         try {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
-                messageArea.appendText("客户端已断开连接: " + socket.getRemoteSocketAddress() + "\n");
+                Platform.runLater(() -> {
+                    messageArea.appendText("客户端已断开连接: " + socket.getRemoteSocketAddress() + "\n");
+                });
             }
         } catch (IOException e) {
-            messageArea.appendText("关闭客户端连接时出错: " + e.getMessage() + "\n");
+            Platform.runLater(() -> {
+                messageArea.appendText("关闭客户端连接时出错: " + e.getMessage() + "\n");
+            });
         } finally {
-            if (callback != null) {
-                callback.onThreadClosed(this);
+            if (onThreadClosedCallback != null) {
+                onThreadClosedCallback.onThreadClosed(this);
             }
         }
     }

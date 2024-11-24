@@ -33,6 +33,7 @@ public class MainpageController {
 
     @FXML
     public Label contactNameLabel;
+
     @FXML
     private ListView<String> contactListView;
 
@@ -131,7 +132,13 @@ public class MainpageController {
         setAvatarButton.setOnAction(event -> setAvatar());
         contactListView.getItems().addAll();
         contactListView.setOnMouseClicked(event -> switchChat());
-        sendButton.setOnAction(event -> sendMessage());
+        sendButton.setOnAction(event -> {
+            try {
+                sendMessage();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         backButton.setOnAction(actionEvent -> back());
         clearButton.setOnAction(actionEvent -> clearChat());
         addFriendButton.setOnAction(actionEvent -> {
@@ -186,10 +193,13 @@ public class MainpageController {
         }
     }
 
-    private void sendMessage() {
+    private void sendMessage() throws IOException {
         String message = messageInput.getText();
         if (!message.isEmpty()) {
             displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0");
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(MessageType.SendMessage+" "+user.getUsername()+" "+selectedContact+" "+message);
             messageInput.clear();
             chatScrollPane.setVvalue(1.0);
         }
