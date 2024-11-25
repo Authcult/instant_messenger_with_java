@@ -225,8 +225,7 @@ package server;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -333,8 +332,12 @@ public class MainpageController {
         }
     }
 
-    private void onThreadSend(ServerThread serverThread) {
-
+    private void onThreadSend(ServerThread thread) {
+        synchronized (ServerThreads) {
+            int clientUserid = thread.getUserid(); // 获取客户端的用户名
+            int friendid = thread.getCurfriendid();
+            SendMessage(thread.getCurmessage(),friendid,clientUserid);
+        }
     }
 
     public void onThreadOpened(ServerThread thread){
@@ -348,6 +351,8 @@ public class MainpageController {
 
     private void updateNumStateLabel() {
         int threadCount = ServerThreads.size();
+        //输出ServerThreads
+        System.out.println("ServerThreads: " + ServerThreads);
         Platform.runLater(() -> numStateLabel.setText(String.valueOf(threadCount)));
     }
 
@@ -355,6 +360,9 @@ public class MainpageController {
         synchronized (ServerThreads) {
             int clientUserid = thread.getUserid();
             ServerThreads.remove(clientUserid);
+            while (ServerThreads.containsKey(clientUserid)) {
+                ServerThreads.remove(clientUserid);
+            }
             updateNumStateLabel();
         }
     }
@@ -375,7 +383,7 @@ public class MainpageController {
             for (Map.Entry<Integer, ServerThread> entry : ServerThreads.entrySet()) {
                 ServerThread serverThread = entry.getValue();
                 if (serverThread != excludeServerThread) {
-                    serverThread.sendMessage(message);
+                    serverThread.sendServerMessage(message);
                 }
             }
         }
@@ -384,7 +392,9 @@ public class MainpageController {
     public static void SendMessage(String message, int friendid,int userid) {
         synchronized (ServerThreads) {
             ServerThread serverThread = ServerThreads.get(friendid);
-            serverThread.sendMessage(message);
+            if (serverThread != null) {
+                serverThread.sendMessage(userid, message);
+            }
         }
     }
 

@@ -29,7 +29,12 @@ public class ServerThread extends Thread{
     public int getUserid() {
         return userid;
     }
-
+    public int getCurfriendid(){
+        return curfriendid;
+    }
+    public String getCurmessage() {
+        return curmessage;
+    }
     @FunctionalInterface
     public interface OnThreadClosedCallback {
         void onThreadClosed(ServerThread thread);
@@ -44,6 +49,11 @@ public class ServerThread extends Thread{
         void onThreadsend(ServerThread thread);
     }
 
+    public void onThreadsend() {
+        if (onThreadSendCallback != null) {
+            onThreadSendCallback.onThreadsend(this);
+        }
+    }
 
     public void setCallbacks(OnThreadClosedCallback onThreadClosedCallback, OnThreadOpenedCallback onThreadOpenedCallback,OnThreadSendCallback onThreadSendCallback) {
         this.onThreadClosedCallback = onThreadClosedCallback;
@@ -51,10 +61,18 @@ public class ServerThread extends Thread{
         this.onThreadSendCallback = onThreadSendCallback;
     }
 
-    public void sendMessage(int userid, int friendid, String message) {
-        //todo
+    private int curfriendid;
+    private String curmessage;
+
+    public void sendMessage(int senderid, String message){
+        ot.println(MessageType.SendMessage+" "+getUsernameById(senderid)+" "+message);
     }
-    public void sendMessage(String message) {
+    public void sendMessage(int userid, int friendid, String message) {
+        curfriendid=friendid;
+        curmessage=message;
+    }
+
+    public void sendServerMessage(String message) {
         ot.println(MessageType.SendServerMessage+" "+message);
     }
 
@@ -91,12 +109,14 @@ public class ServerThread extends Thread{
                     checkAccess(username, password);
                 }
                 if (finalClientMessage.startsWith(MessageType.SendMessage)) {
+                    System.out.println("当前用户："+userid);
                     String data=finalClientMessage.substring(MessageType.SendMessage.length()+1);
                     String[] dataArray=data.split(" ");
                     String username = dataArray[0];
                     String friendUsername = dataArray[1];
                     String message = dataArray[2];
                     sendMessage(getUserId(username), getUserId(friendUsername), message);
+                    onThreadsend();
                 }
                 if (finalClientMessage.startsWith(MessageType.CreateUser)) {
                     String data=finalClientMessage.substring(MessageType.CreateUser.length()+1);

@@ -50,7 +50,19 @@ public class ClientThread extends Thread{
                 if (finalServerMessage.startsWith(MessageType.SendServerMessage)) {
                     String data=finalServerMessage.substring(MessageType.SendServerMessage.length()+1);
                     // 将服务器消息写入 MessageModel
-                    messageModel.setMessage(data);
+                    messageModel.change(data);
+                }
+                if (finalServerMessage.startsWith(MessageType.SendMessage)) {
+                    System.out.println(finalServerMessage);
+                    String data=finalServerMessage.substring(MessageType.SendMessage.length()+1);
+                    String[] dataArray=data.split(" ");
+                    String friendname=dataArray[0];
+                    String message=dataArray[1];
+                    System.out.println("friendname:"+friendname);
+                    System.out.println(message);
+                    // 将服务器消息写入 MessageModel
+                    messageModel.change(message,friendname);
+
                 }
                 if (finalServerMessage.startsWith(MessageType.Friendlist)) {
                     String data=finalServerMessage.substring(MessageType.Friendlist.length()+1);
@@ -67,4 +79,6 @@ public class ClientThread extends Thread{
             e.printStackTrace();
         }
     }
+    //关闭线程
+
 }

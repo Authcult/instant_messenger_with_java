@@ -1,4 +1,3 @@
-
 package client;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -107,14 +106,16 @@ public class MainpageController {
         // 绑定 messageProperty，当消息有变化时更新聊天框
         messageModel.messageProperty().addListener((obs, oldMessage, newMessage) -> {
             if (newMessage != null && !newMessage.isEmpty()) {
-                displayMessage("服务器", newMessage, Pos.CENTER_LEFT, "#FFE0E0");
+                String sender = messageModel.getName();
+                displayMessage(sender, newMessage, Pos.CENTER_LEFT, "#FFE0E0");
+                System.out.println(sender);
             }
         });
     }
 
     @FXML
     public void initialize() throws IOException {
-// 检查 user 是否为 null
+        // 检查 user 是否为 null
         if (user != null) {
             // 加载用户头像
             String avatarPath = user.getAvatarPath();
@@ -184,6 +185,7 @@ public class MainpageController {
         String newContact = contactListView.getSelectionModel().getSelectedItem();
         if (newContact != null && !newContact.equals(selectedContact)) {
             selectedContact = newContact;
+            System.out.println("切换到联系人：" + selectedContact);
             clearChat();
             if (selectedContact.equals("服务器")){
                 contactNameLabel.setText("正在与["+selectedContact+"]通信");
@@ -228,33 +230,35 @@ public class MainpageController {
         }
     }
     private void displayMessage(String sender, String message, Pos alignment, String bgColor) {
-        Platform.runLater(() -> {
-            VBox messageContainer = new VBox(2);
-            messageContainer.setAlignment(alignment);
+        if (sender.equals(selectedContact)||sender.equals(currentUser)) {
+            Platform.runLater(() -> {
+                VBox messageContainer = new VBox(2);
+                messageContainer.setAlignment(alignment);
 
-            ImageView avatarView = new ImageView(userAvatar != null ? userAvatar : defaultAvatar);
-            avatarView.setFitWidth(40);
-            avatarView.setFitHeight(40);
+                ImageView avatarView = new ImageView(userAvatar != null ? userAvatar : defaultAvatar);
+                avatarView.setFitWidth(40);
+                avatarView.setFitHeight(40);
 
-            Text senderText = new Text(sender);
-            senderText.setStyle("-fx-font-weight: bold; -fx-padding: 2;");
+                Text senderText = new Text(sender);
+                senderText.setStyle("-fx-font-weight: bold; -fx-padding: 2;");
 
-            Text messageText = new Text(message);
-            messageText.setStyle("-fx-background-color: " + bgColor + "; -fx-padding: 10; -fx-background-radius: 10;");
+                Text messageText = new Text(message);
+                messageText.setStyle("-fx-background-color: " + bgColor + "; -fx-padding: 10; -fx-background-radius: 10;");
 
-            messageContainer.getChildren().addAll(senderText, messageText);
+                messageContainer.getChildren().addAll(senderText, messageText);
 
-            HBox alignmentBox = new HBox();
-            if (alignment == Pos.CENTER_LEFT) {
-                alignmentBox.getChildren().addAll(avatarView, messageContainer);
-            } else {
-                alignmentBox.getChildren().addAll(messageContainer, avatarView);
-            }
-            alignmentBox.setAlignment(alignment);
-            alignmentBox.setSpacing(10);
+                HBox alignmentBox = new HBox();
+                if (alignment == Pos.CENTER_LEFT) {
+                    alignmentBox.getChildren().addAll(avatarView, messageContainer);
+                } else {
+                    alignmentBox.getChildren().addAll(messageContainer, avatarView);
+                }
+                alignmentBox.setAlignment(alignment);
+                alignmentBox.setSpacing(10);
 
-            chatBox.getChildren().add(alignmentBox);
-        });
+                chatBox.getChildren().add(alignmentBox);
+            });
+        }
     }
 
 
