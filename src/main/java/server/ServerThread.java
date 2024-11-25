@@ -24,7 +24,7 @@ public class ServerThread extends Thread{
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javawork";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
-    private static int userid;
+    private int userid;
 
     public int getUserid() {
         return userid;
