@@ -62,6 +62,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>server/temp_file/</include>
                     <include>**/*.fxml</include>
                     <include>**/image/*.jpg</include>
                     <include>**/*.json</include>

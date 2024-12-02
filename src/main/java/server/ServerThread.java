@@ -9,12 +9,14 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ServerThread extends Thread{
     private TextArea messageArea;
     private ServerSocket serverSocket;
     private Socket socket;
+    private Socket fileSocket;
     private BufferedReader in;
     private PrintWriter ot;
     public ListView<String> contactListView;
@@ -25,7 +27,14 @@ public class ServerThread extends Thread{
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "123";
     private int userid;
-
+    private boolean isFile;
+    private String filePath;
+    public boolean getIsFile() {
+        return isFile;
+    }
+    public String getFilePath() {
+        return filePath;
+    }
     public int getUserid() {
         return userid;
     }
@@ -72,14 +81,57 @@ public class ServerThread extends Thread{
         curmessage=message;
     }
 
+    private ServerSocket createServerSocket(int port) throws IOException {
+        ServerSocket serverSocket = new ServerSocket();
+        serverSocket.setReuseAddress(true);
+        serverSocket.bind(new InetSocketAddress(port));
+        return serverSocket;
+    }
+    public void sendFile(int senderid,String path) throws IOException {
+        ot.println(MessageType.SendFile+" "+getUsernameById(senderid));
+        File file = new File(path);
+        if (file.exists()) {
+            String fileName = file.getName();
+            long fileSize = file.length();
+
+            OutputStream outputStream = fileSocket.getOutputStream();
+            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+
+            dataOutputStream.writeUTF(fileName);
+            dataOutputStream.writeLong(fileSize);
+
+            FileInputStream fileInputStream = new FileInputStream(file);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                dataOutputStream.write(buffer, 0, bytesRead);
+            }
+
+//            bufferedInputStream.close();
+//            dataOutputStream.close();
+            System.out.println("文件发送完毕！");
+        } else {
+            System.out.println("文件不存在: " + file.getAbsolutePath());
+        }
+    }
+
+
+    public void sendFile(int userid, int friendid,String filePath) {
+        curfriendid=friendid;
+        isFile = true;
+        this.filePath=filePath;
+    }
     public void sendServerMessage(String message) {
         ot.println(MessageType.SendServerMessage+" "+message);
     }
 
-    public ServerThread(Socket socket, TextArea messageArea, ListView<String> contactListView) throws IOException {
+    public ServerThread(Socket socket,Socket fileSocket, TextArea messageArea, ListView<String> contactListView) throws IOException {
         this.socket = socket;
+        this.fileSocket=fileSocket;
         this.messageArea = messageArea;
         this.contactListView = contactListView;
+
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         ot = new PrintWriter(socket.getOutputStream(), true);
     }
@@ -92,6 +144,7 @@ public class ServerThread extends Thread{
             // 读取客户端消息
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
+                isFile = false;
                 String finalClientMessage = clientMessage;
                 Platform.runLater(() ->
                         messageArea.appendText("客户端: " + finalClientMessage + "\n")
@@ -114,8 +167,10 @@ public class ServerThread extends Thread{
                     String[] dataArray=data.split(" ");
                     String username = dataArray[0];
                     String friendUsername = dataArray[1];
-                    String message = dataArray[2];
+                    //message 为dataArray的剩余部分
+                    String message = data.substring(username.length() + friendUsername.length() + 2);
                     sendMessage(getUserId(username), getUserId(friendUsername), message);
+                    System.out.println("message:"+curmessage);
                     onThreadsend();
                 }
                 if (finalClientMessage.startsWith(MessageType.CreateUser)) {
@@ -138,6 +193,19 @@ public class ServerThread extends Thread{
                     String username = dataArray[0];
                     List<String> friendlist=getFriendIdsByUserId(getUserId(username));
                     ot.println(MessageType.Friendlist+" "+String.join(",", friendlist));
+                }
+                if (finalClientMessage.startsWith(MessageType.SendFile)) {
+                    String data=finalClientMessage.substring(MessageType.SendFile.length()+1);
+                    String[] dataArray=data.split(" ");
+                    System.out.println(Arrays.toString(dataArray));
+                    String username = dataArray[0];
+                    String friendUsername = dataArray[1];
+                    String filePath = "D:/temp_file/"+data.substring(username.length() + friendUsername.length() + 2);
+
+                    sendFile(getUserId(username), getUserId(friendUsername), filePath);
+                    FileThread fileThread = new FileThread(fileSocket);
+                    fileThread.work();
+                    onThreadsend();
                 }
                 if (finalClientMessage.startsWith(MessageType.Logout)) {
                     closeConnection();

@@ -36,6 +36,7 @@ public class LoginController {
     private PrintWriter out;
 
     private Socket socket;
+    private Socket fileSocket;
 
     public void setSocket(Socket socket) {
         this.socket = socket;
@@ -69,13 +70,14 @@ public class LoginController {
 
         try {
             socket = new Socket("localhost", 5000);
+            fileSocket = new Socket("localhost", 8000);
             // Load the main chat interface
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Signup.fxml"));
             Stage stage = (Stage) signUpButton.getScene().getWindow();
             Scene scene = new Scene(fxmlLoader.load(), 255,461);
             stage.setScene(scene);
             SignupController signupController = fxmlLoader.getController();
-            signupController.setSocket(socket);
+            signupController.setSocket(socket, fileSocket);
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("服务器未上线");
@@ -90,53 +92,64 @@ public class LoginController {
     private void handleSignIn()  {
         try {
             socket = new Socket("localhost", 5000);
+            fileSocket = new Socket("localhost", 8000);
             String username = usernameField.getText();
             String password = passwordField.getText();
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(MessageType.Login+" "+username+" "+password);
-            String serverMessage;
-            while ((serverMessage = in.readLine()) != null) {
-                if (!serverMessage.equals("false")){
-                    try {
+            if(!username.isEmpty() && !password.isEmpty()) {
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
+                out.println(MessageType.Login + " " + username + " " + password);
+                String serverMessage;
+                while ((serverMessage = in.readLine()) != null) {
+                    if (!serverMessage.equals("false")) {
+                        try {
 
-                        // Load the main chat interface
-                        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("mainpage.fxml"));
-                        Stage stage = (Stage) signInButton.getScene().getWindow();
-                        // 初始化MessageModel
-                        MessageModel messageModel = new MessageModel();
+                            // Load the main chat interface
+                            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("mainpage.fxml"));
+                            Stage stage = (Stage) signInButton.getScene().getWindow();
+                            // 初始化MessageModel
+                            MessageModel messageModel = new MessageModel();
 
-                        Scene scene = new Scene(fxmlLoader.load(), 900, 630);
-                        stage.setScene(scene);
-                        MainpageController mainpageController = fxmlLoader.getController();
+                            Scene scene = new Scene(fxmlLoader.load(), 900, 630);
+                            stage.setScene(scene);
+                            MainpageController mainpageController = fxmlLoader.getController();
 
-                        // 将MessageModel传递给MainpageController
-                        mainpageController.setMessageModel(messageModel);
-                        // 创建web实例并启动连接
-                        System.out.println(socket);
-                        mainpageController.setSocket(this.socket);
-                        Profile user = new Profile(username);
-                        mainpageController.loadProfile(user);
-                        ClientThread webClient = new ClientThread(messageModel, socket);
-                        mainpageController.setClientThread(webClient);
-                        new Thread(webClient::connectToServer).start();
+                            // 将MessageModel传递给MainpageController
+                            mainpageController.setMessageModel(messageModel);
+                            // 创建web实例并启动连接
+                            System.out.println(socket);
+                            mainpageController.setSocket(this.socket, this.fileSocket);
+                            Profile user = new Profile(username);
+                            mainpageController.loadProfile(user);
+                            ClientThread webClient = new ClientThread(messageModel, socket, fileSocket);
+                            mainpageController.setClientThread(webClient);
+                            new Thread(webClient::connectToServer).start();
+                            break;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        usernameField.clear();
+                        passwordField.clear();
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("账号或密码错误");
+                        alert.setHeaderText(null);
+                        alert.setContentText("账号或密码错误，请检查!");
+                        alert.showAndWait();
+                        out.println(MessageType.Logout);
                         break;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
                     }
-                }else{
-                    usernameField.clear();
-                    passwordField.clear();
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("账号或密码错误");
-                    alert.setHeaderText(null);
-                    alert.setContentText("账号或密码错误，请检查!");
-                    alert.showAndWait();
-                    out.println(MessageType.Logout);
-                    break;
                 }
+            }else{
+                usernameField.clear();
+                passwordField.clear();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("账号或密码错误");
+                alert.setHeaderText(null);
+                alert.setContentText("账号或密码错误，请检查!");
+                alert.showAndWait();
             }
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);

@@ -241,7 +241,9 @@ import java.sql.Statement;
 public class MainpageController {
 
     private ServerSocket serverSocket;
+    private ServerSocket fileServerSocket;
     private Socket socket;
+    private Socket fileSocket;
 
     // 使用 Map 存储客户端的标识符和对应的 ServerThread
     private static Map<Integer, ServerThread> ServerThreads = Collections.synchronizedMap(new HashMap<>());
@@ -312,31 +314,52 @@ public class MainpageController {
 
     private void startServer() throws IOException {
         serverSocket = new ServerSocket(5000);
+        fileServerSocket = new ServerSocket(8000);
         Platform.runLater(() -> {
             log.appendText("服务器已启动，等待客户端连接...\n");
         });
         while (true) {
             socket = serverSocket.accept();
+            fileSocket = fileServerSocket.accept();
             Platform.runLater(() -> {
                 log.appendText("客户端已连接，开始通信...\n");
                 log.appendText("客户端IP地址: " + socket.getRemoteSocketAddress() + "\n");
             });
             // 创建线程处理客户端请求
-            ServerThread serverThread = new ServerThread(socket, log, contactListView);
+            ServerThread serverThread = new ServerThread(socket,fileSocket, log, contactListView);
             serverThread.setCallbacks(this::onThreadClosed,this::onThreadOpened,this::onThreadSend);
             serverThread.start();
-
 
 
             updateNumStateLabel();
         }
     }
 
-    private void onThreadSend(ServerThread thread) {
+    private void onThreadSend(ServerThread thread){
         synchronized (ServerThreads) {
             int clientUserid = thread.getUserid(); // 获取客户端的用户名
             int friendid = thread.getCurfriendid();
-            SendMessage(thread.getCurmessage(),friendid,clientUserid);
+            System.out.println("客户端id " + clientUserid);
+            boolean isFile=thread.getIsFile();
+            if (isFile){
+                String filePath=thread.getFilePath();
+                try {
+                    sendFile(clientUserid,friendid,filePath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }else {
+                SendMessage(thread.getCurmessage(), friendid, clientUserid);
+            }
+        }
+    }
+
+    private void sendFile(int userid, int friendid, String filePath) throws IOException {
+        synchronized (ServerThreads) {
+            ServerThread serverThread = ServerThreads.get(friendid);
+            if (serverThread != null) {
+                serverThread.sendFile(userid,filePath);
+            }
         }
     }
 

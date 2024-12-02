@@ -30,6 +30,7 @@ public class SignupController {
     private BufferedReader in;
     private PrintWriter out;
     private Socket socket;
+    private Socket fileSocket;
 
     public void initialize() {
         confirmbutton.setOnAction(event -> {
@@ -41,8 +42,9 @@ public class SignupController {
         });
         back.setOnAction(event -> handleback());
     }
-    public void setSocket(Socket socket){
+    public void setSocket(Socket socket,Socket fileSocket){
         this.socket = socket;
+        this.fileSocket = fileSocket;
     }
     private void handleback() {
         try {

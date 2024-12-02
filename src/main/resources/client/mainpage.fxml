@@ -34,7 +34,7 @@
       <HBox alignment="center" prefHeight="95.0" prefWidth="620.0" spacing="10" style="-fx-padding: 10;">
          <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="54.0" prefWidth="49.0" spacing="5.0">
             <children>
-               <Button maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="23.0" prefWidth="25.0" text="+" />
+               <Button fx:id="sendFileButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="23.0" prefWidth="25.0" text="+" />
                <Button fx:id="clearButton" mnemonicParsing="false" prefHeight="23.0" prefWidth="45.0" text="clear" />
             </children>
          </VBox>

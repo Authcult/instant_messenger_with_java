@@ -12,7 +12,7 @@ public class LoginApp extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("login.fxml"));
         Scene scene = new Scene(root,255,461);
 
-        primaryStage.setTitle("Login");
+        primaryStage.setTitle("即时通讯软件——服务端");
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
 

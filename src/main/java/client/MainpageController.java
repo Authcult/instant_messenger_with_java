@@ -55,7 +55,8 @@ public class MainpageController {
     private Button addFriendButton;
     @FXML
     private Button setAvatarButton;
-
+    @FXML
+    private Button sendFileButton;
     private String currentUser = "Me";
 
     private String selectedContact = "";
@@ -64,8 +65,16 @@ public class MainpageController {
 
     private PrintWriter out;
 
+    private FileInputStream fis;
+
+    private DataOutputStream dos;
+
+    private boolean isFile = false;
+
     private Socket socket;
 
+    private Socket fileSocket;
+    private String fileName;
     private Profile user= new Profile();
 
 
@@ -89,8 +98,9 @@ public class MainpageController {
 
     private MessageModel messageModel;
 
-    public void setSocket(Socket socket) {
+    public void setSocket(Socket socket,Socket fileSocket) {
         this.socket = socket;
+        this.fileSocket = fileSocket;
     }
 
     private ClientThread clientThread;
@@ -129,7 +139,13 @@ public class MainpageController {
             // 如果 user 为 null，则使用默认头像
             userAvatar = defaultAvatar;
         }
-
+        sendFileButton.setOnAction(event -> {
+            try {
+                sendFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         setAvatarButton.setOnAction(event -> setAvatar());
         contactListView.getItems().addAll();
         contactListView.setOnMouseClicked(event -> switchChat());
@@ -151,6 +167,23 @@ public class MainpageController {
         });
         selectedContact="服务器";
         refreshFriendList();
+    }
+
+    public void sendFile() throws IOException {
+        browseFile();
+        isFile = true;
+    }
+
+
+    private void browseFile() throws IOException {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
+        File selectedFile = fileChooser.showOpenDialog(null); // 打开文件选择框
+
+        if (selectedFile != null) {
+            messageInput.setText(selectedFile.getAbsolutePath()); // 显示选择的文件路径
+            fileName = selectedFile.getName();
+        }
     }
 
     private void addFriend() throws IOException {
@@ -197,13 +230,47 @@ public class MainpageController {
 
     private void sendMessage() throws IOException {
         String message = messageInput.getText();
-        if (!message.isEmpty()) {
-            displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0");
+        if(!isFile) {
+            if (!message.isEmpty()) {
+                displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0");
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
+                out.println(MessageType.SendMessage + " " + user.getUsername() + " " + selectedContact + " " + message);
+                messageInput.clear();
+                chatScrollPane.setVvalue(1.0);
+            }
+        }else{
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(MessageType.SendMessage+" "+user.getUsername()+" "+selectedContact+" "+message);
+            out.println(MessageType.SendFile+" "+user.getUsername()+" "+selectedContact+" "+fileName);
+            isFile = false;
+            File file = new File(message);
             messageInput.clear();
-            chatScrollPane.setVvalue(1.0);
+            if (file.exists()) {
+                System.out.println("连接到服务器...");
+                String fileName = file.getName();
+                long fileSize = file.length();
+
+                OutputStream outputStream = fileSocket.getOutputStream();
+                DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+
+                dataOutputStream.writeUTF(fileName);
+                dataOutputStream.writeLong(fileSize);
+
+                FileInputStream fileInputStream = new FileInputStream(file);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                    dataOutputStream.write(buffer, 0, bytesRead);
+                }
+
+
+                System.out.println("文件发送完毕！");
+                displayMessage(currentUser, "已发送文件"+fileName+" ", Pos.CENTER_RIGHT, "#E0FFE0");
+            } else {
+                System.out.println("文件不存在: " + file.getAbsolutePath());
+            }
         }
     }
 
