@@ -87,7 +87,15 @@ public class ClientThread extends Thread{
 
     private void receiveFile(String friendname) throws IOException {
         String savePath = "D:/received_file/";
-
+        File directory = new File(savePath);
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (created) {
+                System.out.println("目录已创建: " + savePath);
+            } else {
+                System.out.println("无法创建目录: " + savePath);
+            }
+        }
         try {
             System.out.println("======== 文件接收开始 ========");
             InputStream inputStream = fileSocket.getInputStream();

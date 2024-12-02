@@ -17,16 +17,26 @@ public class FileThread {
 
     public void work() {
         try {
+            File directory = new File(savePath);
+            if (!directory.exists()) {
+                boolean created = directory.mkdirs();
+                if (created) {
+                    System.out.println("目录已创建: " + savePath);
+                } else {
+                    System.out.println("无法创建目录: " + savePath);
+                }
+            }
+
             System.out.println("======== 文件接收开始 ========");
             System.out.println("文件传输端口号：" + socket.getPort());
             InputStream inputStream = socket.getInputStream();
             DataInputStream dataInputStream = new DataInputStream(inputStream);
-
             String fileName = dataInputStream.readUTF();
             System.out.println("文件名：" + fileName);
             long fileSize = dataInputStream.readLong();
 
             File file = new File(savePath + fileName);
+
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
