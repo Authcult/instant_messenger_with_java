@@ -341,6 +341,11 @@ public class MainpageController {
             int friendid = thread.getCurfriendid();
             System.out.println("客户端id " + clientUserid);
             boolean isFile=thread.getIsFile();
+            boolean isGroup=thread.getIsGroup();
+            if (isGroup){
+                String groupName=thread.getGroupName();
+                SendGroupMessage(thread.getCurmessage(),groupName,clientUserid);
+            }
             if (isFile){
                 String filePath=thread.getFilePath();
                 try {
@@ -350,6 +355,17 @@ public class MainpageController {
                 }
             }else {
                 SendMessage(thread.getCurmessage(), friendid, clientUserid);
+            }
+        }
+    }
+
+    private void SendGroupMessage(String message, String groupName, int userid) {
+        synchronized (ServerThreads) {
+            for(int i=1;i<=3;i++) {
+                ServerThread serverThread = ServerThreads.get(i);
+                if (serverThread != null) {
+                    serverThread.sendGroupMessage(userid, message);
+                }
             }
         }
     }

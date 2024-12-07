@@ -6,7 +6,7 @@
 <AnchorPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.LoginController">
     <VBox alignment="CENTER" layoutX="36.0" prefHeight="461.0" prefWidth="255.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom, #7b2ff7, #f107a3);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-        <Label style="-fx-font-size: 24;" text="软件名待定" textFill="WHITE" />
+        <Label style="-fx-font-size: 24;" text="畅所欲言-服务端" textFill="WHITE" />
 
         <TextField fx:id="usernameField" maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="用户名" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />
         <PasswordField fx:id="passwordField" maxWidth="-Infinity" prefHeight="35.0" prefWidth="225.0" promptText="密码" style="-fx-background-radius: 15; -fx-font-size: 14; -fx-padding: 10;" />

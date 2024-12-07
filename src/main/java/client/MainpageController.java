@@ -116,8 +116,14 @@ public class MainpageController {
         messageModel.messageProperty().addListener((obs, oldMessage, newMessage) -> {
             if (newMessage != null && !newMessage.isEmpty()) {
                 String sender = messageModel.getName();
-                displayMessage(sender, newMessage, Pos.CENTER_LEFT, "#FFE0E0",selectedContact);
-                System.out.println(sender);
+                boolean isGroup = messageModel.getIsGroup();
+                if (isGroup){
+                    displayGroupMessage(sender, newMessage, Pos.CENTER_LEFT, "#FFE0E0");
+                    System.out.println(sender);
+                }else {
+                    displayMessage(sender, newMessage, Pos.CENTER_LEFT, "#FFE0E0");
+                    System.out.println(sender);
+                }
             }
         });
     }
@@ -232,12 +238,21 @@ public class MainpageController {
         String message = messageInput.getText();
         if(!isFile) {
             if (!message.isEmpty()) {
-                displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0", selectedContact);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
-                out.println(MessageType.SendMessage + " " + user.getUsername() + " " + selectedContact + " " + message);
-                messageInput.clear();
-                chatScrollPane.setVvalue(1.0);
+                if (selectedContact.equals("群发消息test")){
+                    displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0");
+                    in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    out = new PrintWriter(socket.getOutputStream(), true);
+                    out.println(MessageType.GroupMessage + " " + user.getUsername() + " " + selectedContact + " " + message);
+                    messageInput.clear();
+                    chatScrollPane.setVvalue(1.0);
+                }else {
+                    displayMessage(currentUser, message, Pos.CENTER_RIGHT, "#E0FFE0");
+                    in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    out = new PrintWriter(socket.getOutputStream(), true);
+                    out.println(MessageType.SendMessage + " " + user.getUsername() + " " + selectedContact + " " + message);
+                    messageInput.clear();
+                    chatScrollPane.setVvalue(1.0);
+                }
             }
         }else{
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -267,7 +282,7 @@ public class MainpageController {
 
 
                 System.out.println("文件发送完毕！");
-                displayMessage(currentUser, "已发送文件"+fileName+" ", Pos.CENTER_RIGHT, "#E0FFE0",selectedContact);
+                displayMessage(currentUser, "已发送文件"+fileName+" ", Pos.CENTER_RIGHT, "#E0FFE0");
             } else {
                 System.out.println("文件不存在: " + file.getAbsolutePath());
             }
@@ -296,7 +311,8 @@ public class MainpageController {
             e.printStackTrace();
         }
     }
-    private void displayMessage(String sender, String message, Pos alignment, String bgColor,String friendName) {
+
+    private void displayGroupMessage(String sender, String message, Pos alignment, String bgColor) {
         Platform.runLater(() -> {
             VBox messageContainer = new VBox(2);
             messageContainer.setAlignment(alignment);
@@ -322,15 +338,44 @@ public class MainpageController {
             alignmentBox.setAlignment(alignment);
             alignmentBox.setSpacing(10);
             // 如果sender不在messages中，则添加
-            if (Objects.equals(sender, currentUser)){
-                if (!messages.containsKey(friendName)) {
-                    messages.put(friendName, new ArrayList<>());
-                    messages.get(friendName).add(alignmentBox);
-                }else{
-                    messages.get(friendName).add(alignmentBox);
-                }
+            if (!messages.containsKey("群发消息test")) {
+                messages.put("群发消息test", new ArrayList<>());
+                messages.get("群发消息test").add(alignmentBox);
+            }else{
+                messages.get("群发消息test").add(alignmentBox);
             }
-            else if (!messages.containsKey(sender)) {
+            if (selectedContact.equals("群发消息test")||sender.equals(currentUser)) {
+                chatBox.getChildren().add(alignmentBox);
+            }
+        });
+    }
+    private void displayMessage(String sender, String message, Pos alignment, String bgColor) {
+        Platform.runLater(() -> {
+            VBox messageContainer = new VBox(2);
+            messageContainer.setAlignment(alignment);
+
+            ImageView avatarView = new ImageView(userAvatar != null ? userAvatar : defaultAvatar);
+            avatarView.setFitWidth(40);
+            avatarView.setFitHeight(40);
+
+            Text senderText = new Text(sender);
+            senderText.setStyle("-fx-font-weight: bold; -fx-padding: 2;");
+
+            Text messageText = new Text(message);
+            messageText.setStyle("-fx-background-color: " + bgColor + "; -fx-padding: 10; -fx-background-radius: 10;");
+
+            messageContainer.getChildren().addAll(senderText, messageText);
+
+            HBox alignmentBox = new HBox();
+            if (alignment == Pos.CENTER_LEFT) {
+                alignmentBox.getChildren().addAll(avatarView, messageContainer);
+            } else {
+                alignmentBox.getChildren().addAll(messageContainer, avatarView);
+            }
+            alignmentBox.setAlignment(alignment);
+            alignmentBox.setSpacing(10);
+            // 如果sender不在messages中，则添加
+            if (!messages.containsKey(sender)) {
                 messages.put(sender, new ArrayList<>());
                 messages.get(sender).add(alignmentBox);
             }else{
@@ -340,20 +385,18 @@ public class MainpageController {
                 chatBox.getChildren().add(alignmentBox);
             }
         });
-
     }
 
     private void refreshMessageBoard(String sender) {
         Platform.runLater(() -> {
             chatBox.getChildren().clear();
             List<HBox> messageList = messages.get(sender);
-            if (messageList != null) {
+            if (messageList != null) { // 检查是否为 null
                 for (HBox node : messageList) {
                     chatBox.getChildren().add(node);
                 }
-            } else {
-                // 可以在这里添加一些日志记录或处理逻辑，例如显示一条消息提示用户没有消息
-                System.out.println("No messages found for sender: " + sender);
+            }else{
+                System.out.println("no messages");
             }
         });
     }

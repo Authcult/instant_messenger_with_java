@@ -28,7 +28,11 @@ public class ServerThread extends Thread{
     private static final String DB_PASSWORD = "123";
     private int userid;
     private boolean isFile;
+    private boolean isGroup;
     private String filePath;
+    public boolean getIsGroup() {
+        return isGroup;
+    }
     public boolean getIsFile() {
         return isFile;
     }
@@ -43,6 +47,9 @@ public class ServerThread extends Thread{
     }
     public String getCurmessage() {
         return curmessage;
+    }
+    public String getGroupName() {
+        return groupName;
     }
     @FunctionalInterface
     public interface OnThreadClosedCallback {
@@ -73,6 +80,7 @@ public class ServerThread extends Thread{
     private int curfriendid;
     private String curmessage;
 
+    private String groupName;
     public void sendMessage(int senderid, String message){
         ot.println(MessageType.SendMessage+" "+getUsernameById(senderid)+" "+message);
     }
@@ -80,7 +88,16 @@ public class ServerThread extends Thread{
         curfriendid=friendid;
         curmessage=message;
     }
-
+    public void sendGroupMessage(int senderid, String message){
+        if(senderid!=userid) {
+            ot.println(MessageType.GroupMessage + " " + getUsernameById(senderid) + " " + message);
+        }
+    }
+    public void sendGroupMessage(int userid, String groupName, String message) {
+        this.groupName=groupName;
+        curmessage=message;
+        isGroup=true;
+    }
     private ServerSocket createServerSocket(int port) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.setReuseAddress(true);
@@ -145,6 +162,7 @@ public class ServerThread extends Thread{
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
                 isFile = false;
+                isGroup = false;
                 String finalClientMessage = clientMessage;
                 Platform.runLater(() ->
                         messageArea.appendText("客户端: " + finalClientMessage + "\n")
@@ -207,6 +225,17 @@ public class ServerThread extends Thread{
                     fileThread.work();
                     onThreadsend();
                 }
+                if (finalClientMessage.startsWith(MessageType.GroupMessage)){
+                    System.out.println("当前用户："+userid);
+                    String data=finalClientMessage.substring(MessageType.GroupMessage.length()+1);
+                    String[] dataArray=data.split(" ");
+                    String username = dataArray[0];
+                    String friendUsername = dataArray[1];
+                    //message 为dataArray的剩余部分
+                    String message = data.substring(username.length() + friendUsername.length() + 2);
+                    sendGroupMessage(getUserId(username), friendUsername, message);
+                    onThreadsend();
+                }
                 if (finalClientMessage.startsWith(MessageType.Logout)) {
                     closeConnection();
                     break;
@@ -263,6 +292,9 @@ public class ServerThread extends Thread{
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, userId);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (userId==1||userId==2||userId==3) {
+                        friendIds.add("群发消息test");
+                    }
                     while (resultSet.next()) {
                         int friendId = resultSet.getInt("friend_id");
                         friendIds.add(getUsernameById(friendId));

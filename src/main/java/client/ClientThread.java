@@ -46,11 +46,11 @@ public class ClientThread extends Thread{
             while ((serverMessage = in.readLine()) != null) {
                 String finalServerMessage = serverMessage;
 
-                if (finalServerMessage.startsWith(MessageType.SendServerMessage)) {
-                    String data=finalServerMessage.substring(MessageType.SendServerMessage.length()+1);
-                    // 将服务器消息写入 MessageModel
-                    messageModel.change(data);
-                }
+//                if (finalServerMessage.startsWith(MessageType.SendServerMessage)) {
+//                    String data=finalServerMessage.substring(MessageType.SendServerMessage.length()+1);
+//                    // 将服务器消息写入 MessageModel
+//                    messageModel.change(data);
+//                }
                 if (finalServerMessage.startsWith(MessageType.SendMessage)) {
                     System.out.println(finalServerMessage);
                     String data=finalServerMessage.substring(MessageType.SendMessage.length()+1);
@@ -69,10 +69,20 @@ public class ClientThread extends Thread{
                     String friendname=dataArray[0];
                     receiveFile(friendname);
                 }
+                if(finalServerMessage.startsWith(MessageType.GroupMessage)){
+                    String data=finalServerMessage.substring(MessageType.GroupMessage.length()+1);
+                    String[] dataArray=data.split(" ");
+
+                    String senderName=dataArray[0];
+                    String message=data.substring(senderName.length()+1);
+                    // 将服务器消息写入 MessageModel
+                    System.out.println("groupName:"+senderName);
+                    System.out.println(message);
+                    messageModel.change(message,senderName,true);
+                }
                 if (finalServerMessage.startsWith(MessageType.Friendlist)) {
                     String data=finalServerMessage.substring(MessageType.Friendlist.length()+1);
                     List<String> friendList =new ArrayList<>(Arrays.asList(data.split(",")));
-                    friendList.add(0,"服务器");
                     updateFriendList(friendList);
                 }
 

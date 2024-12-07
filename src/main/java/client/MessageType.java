@@ -20,5 +20,7 @@ public class MessageType {
     public static final String GetFriendList ="getFriendList";
 
     public static final String Friendlist = "friendList";
+
+    public static final String GroupMessage = "groupMessage";
 }
 
